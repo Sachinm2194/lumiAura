@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono,Inclusive_Sans } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,9 +34,7 @@ export default function RootLayout({
         suppressHydrationWarning={false}
         cz-shortcut-listen="true"
       >
-        {/* <Toaster position="top-right" />
-        <NextTopLoader showSpinner={false} />
-        <p></p> */}
+        <Toaster position="top-right" />
         {children}
       </body>
     </html>
