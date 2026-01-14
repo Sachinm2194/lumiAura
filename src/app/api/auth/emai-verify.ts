@@ -1,9 +1,12 @@
-export async function getProjectTypes():  {
+import axiosInstance from "@/lib/helpers/axiosInstance";
+import { handleApiError } from "@/lib/helpers/handleApiError";
+
+export async function emailVerify(token: string): Promise<string | undefined> {
     try {
       const response = await axiosInstance.get(
-      'verify-email'
+      'auth/verify-email',{params: {token}}
       );
-      return response.data;
+      return response.data || response ;
     } catch (error: any) {
       handleApiError(error);
     }

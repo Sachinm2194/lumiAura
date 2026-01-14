@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { CheckCircle, XCircle, Loader2, Mail, ArrowRight } from "lucide-react"
+import { emailVerify } from "@/app/api/auth/emai-verify"
 
 export default function VerifyEmail() {
   const router = useRouter()
@@ -12,24 +13,26 @@ export default function VerifyEmail() {
   const [status, setStatus] = useState("verifying") // verifying | success | error
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error")
-      return
-    }
-
-    fetch(`http://localhost:9000/auth/verify-email?token=${token}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Verification failed")
-        return res.json()
-      })
-      .then(() => {
-        setStatus("success")
-        setTimeout(() => router.push("/sign-in"), 3000)
-      })
-      .catch(() => {
+    const verifyEmail = async () => {
+      if (!token) {
         setStatus("error")
-      })
+        return
+      }
+      try {
+        const response = await emailVerify(token)
+        if (response) {
+          setStatus("success")
+          setTimeout(() => router.push("/sign-in"), 3000)
+        } else {
+          setStatus("error")
+        }
+      } catch (error) {
+        setStatus("error")
+      }
+    }
+    verifyEmail()
   }, [token, router])
+   
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/5 to-primary/5 px-4 py-12">
@@ -83,7 +86,7 @@ export default function VerifyEmail() {
           {/* Action Buttons */}
           {status === "error" && (
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/sign-in")}
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-6 py-3 font-semibold hover:opacity-90 active:scale-95 transition-all duration-200 mt-4"
             >
               <Mail className="h-5 w-5" />
