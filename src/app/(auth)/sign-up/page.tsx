@@ -34,7 +34,7 @@ export default function SignUp() {
       </div>
 
       {/* Main Container */}
-      <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
+      <div className="flex items-center justify-center min-h-screen p-1 relative z-10">
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12 max-w-6xl w-full items-center">
           {/* Left side - Product Showcase */}
           <div className="hidden md:flex flex-col items-center justify-center space-y-8 animate-slide-in-left">
@@ -56,8 +56,8 @@ export default function SignUp() {
             <div className="space-y-6 lg:space-y-8">
               {/* Header */}
               <div className="text-center lg:text-left space-y-2 animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
-                <h1 className="text-5xl md:text-6xl font-bold text-foreground">Create Your Account</h1>
-                <p className="text-lg text-muted-foreground">Start your personalized skincare transformation</p>
+                <h6 className="text-3xl  md:text-4xl font-bold text-foreground">Create Your Account</h6>
+                <p className="text-sm text-muted-foreground">Start your personalized skincare transformation</p>
               </div>
 
               {/* Form Card */}

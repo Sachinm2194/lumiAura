@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { CheckCircle, XCircle, Loader2, Mail, ArrowRight } from "lucide-react"
 import { emailVerify } from "@/app/api/auth/emai-verify"
+import { Button } from "@/components/ui/button"
 
 export default function VerifyEmail() {
   const router = useRouter()
@@ -85,14 +86,14 @@ export default function VerifyEmail() {
 
           {/* Action Buttons */}
           {status === "error" && (
-            <button
+            <Button
               onClick={() => router.push("/sign-in")}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-6 py-3 font-semibold hover:opacity-90 active:scale-95 transition-all duration-200 mt-4"
+              className="w-full cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-6 py-3 font-semibold hover:opacity-90 active:scale-95 transition-all duration-200 mt-4"
             >
               <Mail className="h-5 w-5" />
               Go to Login
               <ArrowRight className="h-4 w-4" />
-            </button>
+            </Button>
           )}
 
           {status === "success" && (

@@ -5,14 +5,26 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Eye, EyeOff } from "lucide-react"
 
 // Validation functions
 const validateEmail = (email: string): string => {
   if (!email.trim()) {
     return "Email is required"
   }
+  if (email.trim().length > 255) {
+    return "Email must be no more than 255 characters"
+  }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email)) {
+  if (!emailRegex.test(email.trim())) {
+    return "Please enter a valid email address"
+  }
+  // Additional check for valid email format
+  const parts = email.trim().split("@")
+  if (parts.length !== 2 || parts[0].length === 0 || parts[1].length === 0) {
+    return "Please enter a valid email address"
+  }
+  if (!parts[1].includes(".")) {
     return "Please enter a valid email address"
   }
   return ""
@@ -25,12 +37,16 @@ const validatePassword = (password: string): string => {
   if (password.length < 8) {
     return "Password must be at least 8 characters"
   }
+  if (password.length > 128) {
+    return "Password must be no more than 128 characters"
+  }
   return ""
 }
 
 export default function SignInForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [touched, setTouched] = useState({
     email: false,
@@ -163,22 +179,36 @@ export default function SignInForm() {
             Forgot password?
           </button>
         </div>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={handlePasswordChange}
-          onBlur={() => handleBlur("password")}
-          autoComplete="new-password"
-          required
-          className={`h-12 rounded-lg border bg-background/40 backdrop-blur-sm px-4 transition-all duration-300 focus:bg-card focus:outline-none ${
-            touched.password && errors.password
-              ? "border-destructive focus:border-destructive/50 focus:shadow-lg"
-              : "border-border/60 focus:border-primary/50 focus:shadow-lg"
-          }`}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••"
+            value={password}
+            onChange={handlePasswordChange}
+            onBlur={() => handleBlur("password")}
+            autoComplete="new-password"
+            required
+            className={`h-12 rounded-lg border bg-background/40 backdrop-blur-sm px-4 pr-12 transition-all duration-300 focus:bg-card focus:outline-none ${
+              touched.password && errors.password
+                ? "border-destructive focus:border-destructive/50 focus:shadow-lg"
+                : "border-border/60 focus:border-primary/50 focus:shadow-lg"
+            }`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-200 focus:outline-none"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
+        </div>
         {touched.password && errors.password && (
           <p className="text-xs text-destructive animate-fade-in mt-1">{errors.password}</p>
         )}
