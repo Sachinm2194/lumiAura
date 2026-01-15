@@ -7,8 +7,9 @@ interface SignInPayload {
 
 export async function signIn(payload: SignInPayload): Promise<any | undefined> {
   try {
-    const response = await axiosInstance.post("auth/signin", {
-      params: payload,
+    const response = await axiosInstance.post("auth/login", payload, {
+      headers: { skipAuth: true },
+      withCredentials: true,
     });
     return response.data || response;
   } catch (error: any) {

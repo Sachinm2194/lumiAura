@@ -6,6 +6,8 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
+import { signIn } from "@/app/api/auth/signin"
+import { handleApiError } from "@/lib/helpers/handleApiError"
 
 // Validation functions
 const validateEmail = (email: string): string => {
@@ -95,7 +97,7 @@ export default function SignInForm() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Mark all fields as touched
@@ -117,26 +119,34 @@ export default function SignInForm() {
 
     setIsLoading(true)
 
-    console.log("🎉 Sign In Form Submitted", {
-      email,
-      password: "••••••••",
-      actualPassword: password,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-    })
+    try {
+      const response = await signIn({ email: email.trim(), password })
 
-    // Simulate submission delay
-    setTimeout(() => {
-      setIsLoading(false)
+      // Best-effort token storage (depends on backend response shape)
+      const token =
+        response?.token ??
+        response?.accessToken ??
+        response?.data?.token ??
+        response?.data?.accessToken
+
+      if (token && typeof window !== "undefined") {
+        localStorage.setItem("token", token)
+      }
+
+      // Reset form on success
       setEmail("")
       setPassword("")
+      setShowPassword(false)
       setTouched({ email: false, password: false })
       setErrors({ email: "", password: "" })
       if (formRef.current) {
         formRef.current.reset()
       }
-      alert("✅ Sign in data logged to console! Check the browser console (F12).")
-    }, 1200)
+    } catch (error) {
+      handleApiError(error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
