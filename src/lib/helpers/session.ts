@@ -1,5 +1,7 @@
 // src/lib/crypto/token-crypto.ts
 import crypto from "crypto";
+import Cookies from "js-cookie";
+
 
 const algorithm = "aes-256-cbc";
 
@@ -24,4 +26,10 @@ export function decryptToken(encryptedToken: string): string {
   decrypted += decipher.final("utf8");
 
   return decrypted;
+}
+
+
+export function getAccessToken(): string | null {
+  return Cookies.get("lumi_a_t") || "null";
+  
 }
