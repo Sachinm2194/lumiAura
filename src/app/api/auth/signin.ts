@@ -1,21 +1,28 @@
 import axiosInstance from "@/lib/helpers/axiosInstance";
 import { handleApiError } from "@/lib/helpers/handleApiError";
-import { get } from "http";
+
 interface SignInPayload {
   email: string;
   password: string;
 }
 
-export async function signIn(payload: SignInPayload): Promise<any | undefined> {
+interface SignInResponse {
+  message: string;
+  id: number;
+  email: string;
+  role: string;
+}
+
+export async function signIn(payload: SignInPayload): Promise<SignInResponse | undefined> {
   try {
-    
-    const response = await axiosInstance.post("auth/login", payload, {
+    const response = await axiosInstance.post<SignInResponse>("auth/login", payload, {
       headers: { skipAuth: true },
       withCredentials: true,
     });
    
-    return response.data || response;
+    return response.data;
   } catch (error: any) {
     handleApiError(error);
+    throw error; // Re-throw to let form handle it
   }
 }

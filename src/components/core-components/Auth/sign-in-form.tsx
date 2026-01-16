@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 import { signIn } from "@/app/api/auth/signin"
 import { handleApiError } from "@/lib/helpers/handleApiError"
+import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "next/navigation"
 
 // Validation functions
 const validateEmail = (email: string): string => {
@@ -59,6 +61,8 @@ export default function SignInForm() {
     password: "",
   })
   const formRef = useRef<HTMLFormElement>(null)
+  const { login } = useAuth()
+  const router = useRouter()
 
   // Clear form on mount
   useEffect(() => {
@@ -122,15 +126,19 @@ export default function SignInForm() {
     try {
       const response = await signIn({ email: email.trim(), password })
 
-      // Best-effort token storage (depends on backend response shape)
-      const token =
-        response?.token ??
-        response?.accessToken ??
-        response?.data?.token ??
-        response?.data?.accessToken
+      // Extract user data from response
+      if (response) {
+        const userData = {
+          id: response.id,
+          email: response.email,
+          role: response.role,
+        }
+        
+        // Store user data in Auth Context
+        login(userData)
 
-      if (token && typeof window !== "undefined") {
-        localStorage.setItem("token", token)
+        // Redirect to home page after successful login (use replace to prevent back button)
+        router.replace("/")
       }
 
       // Reset form on success
