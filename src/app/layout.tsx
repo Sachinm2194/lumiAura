@@ -3,6 +3,8 @@ import { Geist, Geist_Mono,Inclusive_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
+import TopLoader from "@/components/core-components/top-loader";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +37,8 @@ export default function RootLayout({
         suppressHydrationWarning={false}
         cz-shortcut-listen="true"
       >
+        <TopLoader />
+
         <AuthProvider>
           <Toaster position="top-right" />
           {children}
