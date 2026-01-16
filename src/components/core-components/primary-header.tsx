@@ -17,7 +17,8 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/sign-in");
+    // Redirect to home page after logout (home is public)
+    router.push("/");
   };
 
   return (

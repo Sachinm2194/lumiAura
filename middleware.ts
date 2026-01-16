@@ -9,6 +9,9 @@ const protectedRoutePattern = /^\/(cart|dashboard|profile)/; // Add your protect
 // Auth routes (login, signup) - redirect to home if already authenticated
 const authRoutes = ["/sign-in", "/sign-up", "/verify-email"];
 
+// Public routes that are accessible without authentication
+const publicRoutes = ["/"]; // Home page is public
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -19,6 +22,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/favicon.ico") ||
     pathname.match(/\.(ico|png|jpg|jpeg|svg|webp|avif)$/)
   ) {
+    return NextResponse.next();
+  }
+
+  // Allow public routes without authentication check
+  if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
 

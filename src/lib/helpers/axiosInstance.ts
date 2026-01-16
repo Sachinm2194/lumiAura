@@ -28,12 +28,16 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       // Session expired or invalid cookie
-      // Only handle if not already on login/signup page
       if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
         const isAuthPage = currentPath.startsWith("/sign-in") || 
                           currentPath.startsWith("/sign-up") ||
                           currentPath.startsWith("/verify-email");
+        
+        // Protected routes that should redirect to login
+        const isProtectedRoute = currentPath.startsWith("/cart") || 
+                                currentPath.startsWith("/dashboard") ||
+                                currentPath.startsWith("/profile");
 
         if (!isAuthPage) {
           // Clear auth state (will be handled by context)
@@ -42,8 +46,13 @@ axiosInstance.interceptors.response.use(
             detail: { reason: "session_expired" } 
           }));
 
-          // Redirect to login with message
-          window.location.href = "/sign-in?expired=true";
+          // Only redirect to login if on protected route, otherwise stay on current page (or go to home)
+          if (isProtectedRoute) {
+            window.location.href = "/sign-in?expired=true";
+          } else {
+            // For public routes like "/", just clear state and stay on page
+            // No redirect needed - user can stay on public pages
+          }
         }
       }
     }
