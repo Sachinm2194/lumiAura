@@ -57,9 +57,11 @@ axiosInstance.interceptors.response.use(
         const isSignupEndpoint = requestUrl.includes("/auth/signup");
         const isLogoutEndpoint = requestUrl.includes("/auth/logout");
         const isRefreshEndpoint = requestUrl.includes("/auth/refresh");
+        const isVerifyEndpoint = requestUrl.includes("/auth/verify");
         
-        // Don't refresh if it's login/signup/logout/refresh endpoints
-        if (isLoginEndpoint || isSignupEndpoint || isLogoutEndpoint || isRefreshEndpoint) {
+        // Don't refresh if it's login/signup/logout/refresh/verify endpoints
+        // Verify endpoint 401 is expected when user is not logged in - don't try to refresh
+        if (isLoginEndpoint || isSignupEndpoint || isLogoutEndpoint || isRefreshEndpoint || isVerifyEndpoint) {
           // For these endpoints, just handle logout/redirect
           const isAuthPage = currentPath.startsWith("/sign-in") || 
                             currentPath.startsWith("/sign-up") ||

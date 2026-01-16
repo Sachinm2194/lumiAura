@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -44,10 +44,7 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
         </Link>
 
         <div className="flex items-center gap-2">
-          {isLoading ? (
-            // Show loading state
-            <div className="w-6 h-6 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-          ) : isAuthenticated && user ? (
+          {isAuthenticated && user ? (
             // Show user info and logout when authenticated
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-sm">

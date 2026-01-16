@@ -1,12 +1,12 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { CheckCircle, XCircle, Loader2, Mail, ArrowRight } from "lucide-react"
 import { emailVerify } from "@/app/api/auth/emai-verify"
 import { Button } from "@/components/ui/button"
 
-export default function VerifyEmail() {
+function VerifyEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
@@ -120,5 +120,24 @@ export default function VerifyEmail() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function VerifyEmail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/5 to-primary/5 px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="bg-card rounded-2xl shadow-lg border border-border p-8 sm:p-10 text-center space-y-6">
+            <div className="flex justify-center">
+              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Loading...</h1>
+          </div>
+        </div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }

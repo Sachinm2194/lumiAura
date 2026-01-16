@@ -8,23 +8,19 @@ import ProductCarousel from "@/components/core-components/Auth/product-carousel"
 import SignInForm from "@/components/core-components/Auth/sign-in-form"
 
 export default function SignIn() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated } = useAuth()
   const router = useRouter()
 
   // Redirect if already authenticated (handles browser back button and manual URL entry)
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (isAuthenticated) {
       router.replace("/") // Use replace to prevent back button from going to sign-in
     }
-  }, [isAuthenticated, isLoading, router])
+  }, [isAuthenticated, router])
 
-  // Show loading while checking auth or redirecting
-  if (isLoading || isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
+  // Redirect if authenticated
+  if (isAuthenticated) {
+    return null; // Don't render anything while redirecting
   }
 
   return (

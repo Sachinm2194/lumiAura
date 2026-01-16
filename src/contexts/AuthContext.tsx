@@ -32,27 +32,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check authentication status on app load
   useEffect(() => {
+    let isMounted = true; // Track if component is still mounted
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     const checkAuth = async () => {
       try {
+        console.log("[AuthContext] Starting auth check");
         setIsLoading(true)
-        const userData = await getCurrentUser()
+        
+        // Safety timeout - always set loading to false after 10 seconds
+        timeoutId = setTimeout(() => {
+          if (isMounted) {
+            console.warn("[AuthContext] Force setting isLoading to false after 10 seconds");
+            setIsLoading(false);
+          }
+        }, 10000);
+
+        const userData = await getCurrentUser();
+        
+        // Clear safety timeout since we got a response
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        
+        // Check if component is still mounted before updating state
+        if (!isMounted) {
+          console.log("[AuthContext] Component unmounted, skipping state update");
+          return;
+        }
         
         if (userData) {
           // User is authenticated, restore user data
+          console.log("[AuthContext] User authenticated:", userData);
           setUser(userData)
         } else {
           // User is not authenticated, keep user as null
+          console.log("[AuthContext] User not authenticated");
           setUser(null)
         }
       } catch (error) {
         // Error already handled in getCurrentUser, just set user to null
-        setUser(null)
+        console.error("[AuthContext] Auth check error:", error);
+        if (isMounted) {
+          setUser(null)
+        }
       } finally {
-        setIsLoading(false)
+        // Clear timeout if still active
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        
+        // Always set loading to false, regardless of mount status
+        if (isMounted) {
+          console.log("[AuthContext] Setting isLoading to false");
+          setIsLoading(false)
+        }
       }
     }
 
     checkAuth()
+    
+    return () => {
+      isMounted = false; // Cleanup: mark as unmounted
+      if (timeoutId) {
+        clearTimeout(timeoutId); // Clear timeout on unmount
+      }
+    }
   }, []) // Run only once on mount
 
   // Listen for session expiration events from axios interceptor
