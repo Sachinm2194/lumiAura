@@ -1,8 +1,9 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react"
 import { getCurrentUser } from "@/app/api/auth/verify-user"
 import { logout as logoutApi } from "@/app/api/auth/logout"
+import { refreshToken } from "@/app/api/auth/refresh"
 
 // User data type
 export interface User {
@@ -68,20 +69,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Periodic token refresh (every 50 seconds to refresh before 1-minute expiry)
+  useEffect(() => {
+    if (!user) return; // Only refresh if user is logged in
+
+    const refreshInterval = setInterval(async () => {
+      try {
+        // Silently refresh token in background
+        await refreshToken();
+        // Token refreshed successfully - new cookies set by backend
+      } catch (error) {
+        // Refresh failed - token might be expired, clear user state
+        setUser(null);
+        clearInterval(refreshInterval);
+      }
+    }, 50000); // Refresh every 50 seconds (before 1-minute access token expiry)
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [user]); // Re-run when user changes
+
   const login = (userData: User) => {
     setUser(userData)
   }
 
   const logout = async () => {
-    try {
-      // Call backend to clear HTTP-only cookie
-      await logoutApi()
-    } catch (error) {
+    // Optimistic update - clear user state immediately for instant UI update
+    setUser(null)
+    
+    // Call backend to clear HTTP-only cookie in background (don't wait for it)
+    logoutApi().catch((error) => {
       // Error already handled in logoutApi
-    } finally {
-      // Always clear local state, even if API call fails
-      setUser(null)
-    }
+      // User state is already cleared, so UI is updated
+    })
   }
 
   const setLoading = (loading: boolean) => {
