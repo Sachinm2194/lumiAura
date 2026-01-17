@@ -85,7 +85,7 @@ User Agent: ${navigator.userAgent}
             <Button
               onClick={handleReset}
               disabled={isResetting}
-              className="w-full bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+              className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground cursor-pointer"
               size="lg"
             >
               {isResetting ? (
@@ -106,7 +106,7 @@ User Agent: ${navigator.userAgent}
               onClick={() => {
                 window.location.href = "/";
               }}
-              className="w-full border-red-200 text-red-700 hover:bg-red-50 cursor-pointer"
+              className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 cursor-pointer"
             >
               <Home className="w-4 h-4 mr-2" />
               Go Home
@@ -118,7 +118,7 @@ User Agent: ${navigator.userAgent}
               <Button
                 variant="ghost"
                 onClick={() => setShowDetails(!showDetails)}
-                className="w-full justify-between text-sm text-gray-600 hover:text-gray-800 cursor-pointer"
+                className="w-full justify-between text-sm text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <span>Error Details</span>
                 {showDetails ? (
@@ -130,13 +130,13 @@ User Agent: ${navigator.userAgent}
 
               {showDetails && (
                 <div className="mt-3 space-y-3 animate-in slide-in-from-top-2 duration-200">
-                  <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                  <div className="bg-muted rounded-lg p-3 text-sm text-foreground">
                     <div className="font-medium mb-1">Message:</div>
-                    <div className="text-gray-600">{error.message}</div>
+                    <div className="text-muted-foreground">{error.message}</div>
                   </div>
 
                   {error.digest && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                    <div className="bg-muted rounded-lg p-3 text-sm">
                       <div className="font-medium mb-1">Error ID:</div>
                       <Badge variant="secondary" className="font-mono text-xs">
                         {error.digest}

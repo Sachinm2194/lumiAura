@@ -60,17 +60,17 @@ const images = [
                 </div>
                 <button
                   onClick={() => emblaApi?.scrollPrev()}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 shadow hover:bg-white z-20"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/70 backdrop-blur-sm rounded-full p-2 shadow hover:bg-background z-20 transition-colors"
                   aria-label="Previous"
                 >
-                  <ChevronLeft className="w-5 h-5 text-black cursor-pointer" />
+                  <ChevronLeft className="w-5 h-5 text-foreground cursor-pointer" />
                 </button>
                 <button
                   onClick={() => emblaApi?.scrollNext()}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 rounded-full p-2 shadow hover:bg-white z-20"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/70 backdrop-blur-sm rounded-full p-2 shadow hover:bg-background z-20 transition-colors"
                   aria-label="Next"
                 >
-                  <ChevronRight className="w-5 h-5 text-black cursor-pointer" />
+                  <ChevronRight className="w-5 h-5 text-foreground cursor-pointer" />
                 </button>
               </>
             )}

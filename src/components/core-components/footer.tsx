@@ -4,20 +4,20 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-200 text-sm px-6 py-10 mt-24">
+    <footer className="bg-card border-t border-border text-foreground text-sm px-6 py-10 mt-24">
       <div className="max-w-screen-xl mx-auto grid md:grid-cols-4 gap-8">
         {/* Brand and motto */}
         <div>
-          <span className="text-2xl font-extrabold uppercase tracking-widest text-white">
+          <span className="text-2xl font-extrabold uppercase tracking-widest text-foreground">
             LumiAura GlowSkin
           </span>
-          <p className="mt-3 text-gray-400">
+          <p className="mt-3 text-muted-foreground">
             Thoughtful rituals. Authentic wellness. Mindful gifting.
           </p>
         </div>
         {/* Navigation links */}
         <div>
-          <h6 className="font-bold mb-3 text-white">Quick Links</h6>
+          <h6 className="font-bold mb-3 text-foreground">Quick Links</h6>
           <ul className="space-y-2">
             <li>
               <Link href="/" className="hover:underline">
@@ -48,7 +48,7 @@ export default function Footer() {
         </div>
         {/* Contact info */}
         <div>
-          <h6 className="font-bold mb-3 text-white">Contact</h6>
+          <h6 className="font-bold mb-3 text-foreground">Contact</h6>
           <ul className="space-y-2">
             <li>
               Email:{" "}
@@ -67,12 +67,12 @@ export default function Footer() {
         </div>
         {/* Social links */}
         <div>
-          <h6 className="font-bold mb-3 text-white">Follow Us</h6>
+          <h6 className="font-bold mb-3 text-foreground">Follow Us</h6>
           <div className="flex space-x-4 text-xl items-center">
             <a
               href="#"
               aria-label="Facebook"
-              className="hover:text-white text-gray-400"
+              className="hover:text-foreground text-muted-foreground transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -87,7 +87,7 @@ export default function Footer() {
             <a
               href="#"
               aria-label="Facebook"
-              className="hover:text-white text-gray-400"
+              className="hover:text-foreground text-muted-foreground transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -123,7 +123,7 @@ export default function Footer() {
         </div>
       </div>
       {/* Copyright */}
-      <div className="mt-8 pt-8 border-t border-gray-700 text-center text-gray-500">
+      <div className="mt-8 pt-8 border-t border-border text-center text-muted-foreground">
         &copy; {new Date().getFullYear()} ILEM JAPAN. All rights reserved.
       </div>
     </footer>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono,Inclusive_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import TopLoader from "@/components/core-components/top-loader";
 import BottomNavigationFooter from "@/components/core-components/bottom-navigation-footer";
@@ -32,19 +33,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`antialiased ${inclusiveSans.className} `}
         suppressHydrationWarning={false}
         cz-shortcut-listen="true"
       >
-        <TopLoader />
-
-        <AuthProvider>
-          <Toaster position="top-right" />
-          {children}
-          <BottomNavigationFooter />
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TopLoader />
+          <AuthProvider>
+            <Toaster position="top-right" />
+            {children}
+            <BottomNavigationFooter />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

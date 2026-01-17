@@ -34,8 +34,8 @@ export default function IngredientsSection() {
   };
 
   return (
-    <section className="py-16 bg-white">
-      <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">
+    <section className="py-16 bg-background">
+      <h2 className="text-3xl font-bold text-center text-foreground mb-10">
         Ingredients Used
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 max-w-6xl mx-auto px-4">
@@ -46,14 +46,14 @@ export default function IngredientsSection() {
             style={{ perspective: 1000 }}
           >
             <div
-              className={`w-full h-72 rounded-xl shadow-lg bg-gray-50 transition-transform duration-700 transform-style-preserve-3d ${
+              className={`w-full h-72 rounded-xl shadow-lg bg-muted transition-transform duration-700 transform-style-preserve-3d ${
                 flipped[idx] ? "rotate-y-180" : ""
               }`}
               style={{ transformStyle: "preserve-3d" }}
             >
               {/* Front Side */}
               <div
-                className="absolute inset-0 overflow-hidden rounded-xl bg-gray-100"
+                className="absolute inset-0 overflow-hidden rounded-xl bg-secondary"
                 style={{
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: "hidden",
@@ -68,7 +68,7 @@ export default function IngredientsSection() {
                 <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex items-center justify-between">
                   {/* Name: highlighted pill style and border */}
                   <span
-                    className="bg-white/90 text-[#A0021D] font-extrabold text-lg py-1 px-3 rounded-lg shadow-lg border-2 border-[#A0021D] tracking-wide"
+                    className="bg-card/90 text-primary font-extrabold text-lg py-1 px-3 rounded-lg shadow-lg border-2 border-primary tracking-wide"
                     style={{
                       textShadow: "0 2px 8px rgba(0,0,0,0.18)",
                       letterSpacing: "0.04em",
@@ -78,7 +78,7 @@ export default function IngredientsSection() {
                   </span>
                   <button
                     aria-label="Flip card"
-                    className="text-white hover:text-yellow-300 p-2 rounded-full bg-black/40 transition ml-2"
+                    className="text-card-foreground hover:text-primary p-2 rounded-full bg-foreground/40 transition ml-2"
                     onClick={() => handleFlip(idx)}
                   >
                     <RotateCw className="w-6 h-6 cursor-pointer" />
@@ -86,9 +86,8 @@ export default function IngredientsSection() {
                 </div>
               </div>
               {/* Back Side */}
-              {/* Back Side */}
               <div
-                className="absolute inset-0 rounded-xl bg-[#A0021D] text-white text-center text-base px-6 flex items-center justify-center"
+                className="absolute inset-0 rounded-xl bg-primary text-primary-foreground text-center text-base px-6 flex items-center justify-center"
                 style={{
                   transform: "rotateY(180deg)",
                   backfaceVisibility: "hidden",
@@ -100,7 +99,7 @@ export default function IngredientsSection() {
                 {/* Flip icon absolutely bottom right */}
                 <button
                   aria-label="Flip card back"
-                  className="absolute bottom-4 right-4 text-white hover:text-yellow-300 p-2 rounded-full bg-black/30 transition"
+                  className="absolute bottom-4 right-4 text-primary-foreground hover:text-accent-foreground p-2 rounded-full bg-foreground/30 transition"
                   onClick={() => handleFlip(idx)}
                 >
                   <RotateCw className="w-6 h-6" />

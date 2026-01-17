@@ -70,12 +70,12 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
   const shouldShowSkeleton = isLoading && !showButtons;
 
   return (
-    <header className="w-full border-b bg-white shadow fixed top-0 left-0 z-50">
+    <header className="w-full border-b bg-background shadow fixed top-0 left-0 z-50">
       <div className="flex h-16 items-center justify-between gap-4 px-6">
         <button
           onClick={onMenuToggle}
           aria-label="Toggle categories menu"
-          className="p-2 rounded hover:bg-gray-100 transition"
+          className="p-2 rounded hover:bg-accent transition"
         >
           {menuActive ? (
             <X className="h-6 w-6" />
@@ -97,11 +97,11 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
             // Matches authenticated state: Wishlist (icon), Cart (icon), Profile (avatar, hidden on mobile)
             <div className="flex items-center gap-2">
               {/* Wishlist button skeleton - matches Button size="icon" (size-9) */}
-              <div className="h-9 w-9 bg-gray-200 rounded-md animate-pulse"></div>
+              <div className="h-9 w-9 bg-muted rounded-md animate-pulse"></div>
               {/* Cart button skeleton - matches Button size="icon" (size-9) */}
-              <div className="h-9 w-9 bg-gray-200 rounded-md animate-pulse"></div>
+              <div className="h-9 w-9 bg-muted rounded-md animate-pulse"></div>
               {/* Profile avatar skeleton - matches Avatar h-9 w-9 rounded-full, hidden on mobile */}
-              <div className="hidden md:block h-9 w-9 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="hidden md:block h-9 w-9 bg-muted rounded-full animate-pulse"></div>
             </div>
           ) : isAuthenticated && user ? (
             // Show Wishlist, Cart, and Profile when authenticated

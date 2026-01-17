@@ -23,7 +23,7 @@ export default function GoogleOAuthButton({
       type="button"
       variant={variant}
       onClick={handleGoogleAuth}
-      className={`w-full cursor-pointer h-12 rounded-xl border-2 border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-all duration-300 hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${className}`}
+      className={`w-full cursor-pointer h-12 rounded-xl border-2 border-border hover:border-primary/50 bg-background hover:bg-accent text-foreground font-medium transition-all duration-300 hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${className}`}
     >
       <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
