@@ -7,10 +7,10 @@ const protectedRoutes = ["/cart"]; // Add more protected routes here
 const protectedRoutePattern = /^\/(cart|dashboard|profile)/; // Add your protected routes
 
 // Auth routes (login, signup) - redirect to home if already authenticated
-const authRoutes = ["/sign-in", "/sign-up", "/verify-email"];
+const authRoutes = ["/sign-in", "/sign-up", "/verify-email",];
 
 // Public routes that are accessible without authentication
-const publicRoutes = ["/"]; // Home page is public
+const publicRoutes = ["/","/success"]; // Home page is public
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
