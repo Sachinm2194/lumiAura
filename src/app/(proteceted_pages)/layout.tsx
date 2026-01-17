@@ -14,10 +14,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   // 1. Middleware (server-side) - redirects immediately if no cookies
   // 2. Auth context (client-side) - redirects after auth check if not authenticated
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthenticated) {
       router.replace(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
     }
-  }, [isAuthenticated, isLoading, router, pathname]);
+  }, [isAuthenticated, router, pathname]);
 
   // Show loading spinner while checking auth
   if (isLoading) {
