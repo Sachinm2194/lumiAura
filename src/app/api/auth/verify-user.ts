@@ -12,7 +12,7 @@ export async function getCurrentUser(): Promise<AuthMeResponse | null> {
     console.log("[getCurrentUser] Calling auth/verify endpoint");
     const response = await axiosInstance.get<AuthMeResponse>("auth/verify", {
       withCredentials: true,
-      timeout: 5000, // 5 second timeout to prevent hanging
+      timeout: 3000, // 3 second timeout to prevent hanging
     });
     
     console.log("[getCurrentUser] Success, user data:", response.data);

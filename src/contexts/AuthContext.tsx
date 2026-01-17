@@ -40,13 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log("[AuthContext] Starting auth check");
         setIsLoading(true)
         
-        // Safety timeout - always set loading to false after 10 seconds
+        // Safety timeout - always set loading to false after 5 seconds (faster than API timeout)
         timeoutId = setTimeout(() => {
           if (isMounted) {
-            console.warn("[AuthContext] Force setting isLoading to false after 10 seconds");
+            console.warn("[AuthContext] Force setting isLoading to false after 5 seconds");
             setIsLoading(false);
           }
-        }, 10000);
+        }, 5000);
 
         const userData = await getCurrentUser();
         

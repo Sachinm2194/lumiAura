@@ -61,8 +61,15 @@ axiosInstance.interceptors.response.use(
         
         // Don't refresh if it's login/signup/logout/refresh/verify endpoints
         // Verify endpoint 401 is expected when user is not logged in - don't try to refresh
+        // Login endpoint 401 is expected when credentials are wrong - don't try to refresh
         if (isLoginEndpoint || isSignupEndpoint || isLogoutEndpoint || isRefreshEndpoint || isVerifyEndpoint) {
-          // For these endpoints, just handle logout/redirect
+          // For login/signup endpoints, 401 is a valid response (wrong credentials)
+          // Just reject the error and let the form handle it - don't do any logout/redirect
+          if (isLoginEndpoint || isSignupEndpoint) {
+            return Promise.reject(error);
+          }
+          
+          // For logout/refresh/verify endpoints, handle logout/redirect
           const isAuthPage = currentPath.startsWith("/sign-in") || 
                             currentPath.startsWith("/sign-up") ||
                             currentPath.startsWith("/verify-email");

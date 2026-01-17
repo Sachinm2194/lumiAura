@@ -62,21 +62,30 @@ export async function middleware(request: NextRequest) {
       } else {
         const verifyUrl = `${backendUrl}/auth/verify`;
 
-      // Step 1: Call verify endpoint
+      // Step 1: Call verify endpoint with timeout (2 seconds max)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+
       let verifyResponse = await fetch(verifyUrl, {
         method: "GET",
         headers: {
           Cookie: cookieHeader, // Forward cookies to backend
         },
         credentials: "include",
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       // Step 2: If verify returns 401 AND we have refresh token, try to refresh
       if (verifyResponse.status === 401 && hasAuthCookie && backendUrl) {
         const refreshUrl = `${backendUrl}/auth/refresh`;
         
         try {
-          // Call refresh endpoint
+          // Call refresh endpoint with timeout (2 seconds max)
+          const refreshController = new AbortController();
+          const refreshTimeoutId = setTimeout(() => refreshController.abort(), 2000);
+
           const refreshResponse = await fetch(refreshUrl, {
             method: "POST",
             headers: {
@@ -84,7 +93,10 @@ export async function middleware(request: NextRequest) {
               "Content-Type": "application/json",
             },
             credentials: "include",
+            signal: refreshController.signal,
           });
+
+          clearTimeout(refreshTimeoutId);
 
           // Step 3: If refresh succeeds, extract new cookies and retry verify
           if (refreshResponse.ok) {
@@ -130,31 +142,55 @@ export async function middleware(request: NextRequest) {
                   .join("; ")
               : cookieHeader; // Fallback to original if extraction failed
             
-            // Retry verify with updated cookies (includes new access token)
+            // Retry verify with updated cookies (includes new access token) with timeout
+            const retryController = new AbortController();
+            const retryTimeoutId = setTimeout(() => retryController.abort(), 2000);
+
             verifyResponse = await fetch(verifyUrl, {
               method: "GET",
               headers: {
                 Cookie: updatedCookieHeader,
               },
               credentials: "include",
+              signal: retryController.signal,
             });
+
+            clearTimeout(retryTimeoutId);
             isAuthenticated = verifyResponse.ok; // 200 = authenticated
           } else {
-            // Refresh failed - user needs to login
+            // Refresh failed - user needs to login, redirect immediately
             isAuthenticated = false;
+            // Don't wait, redirect immediately if refresh fails
+            if (isProtectedRoute) {
+              const loginUrl = new URL("/sign-in", request.url);
+              loginUrl.searchParams.set("redirect", pathname);
+              return NextResponse.redirect(loginUrl, 307);
+            }
           }
         } catch (refreshError) {
-          // Refresh call failed - user needs to login
+          // Refresh call failed - user needs to login, redirect immediately
           isAuthenticated = false;
+          // Don't wait, redirect immediately if refresh fails
+          if (isProtectedRoute) {
+            const loginUrl = new URL("/sign-in", request.url);
+            loginUrl.searchParams.set("redirect", pathname);
+            return NextResponse.redirect(loginUrl, 307);
+          }
         }
       } else {
         // Verify returned 200 or other status
         isAuthenticated = verifyResponse.ok; // 200 = authenticated
       }
       }
-    } catch (error) {
-      // If backend call fails, assume not authenticated
-      isAuthenticated = false;
+    } catch (error: any) {
+      // If backend call fails or times out, assume not authenticated
+      if (error.name === 'AbortError') {
+        // Timeout - assume not authenticated to be safe
+        isAuthenticated = false;
+      } else {
+        // Other errors - assume not authenticated
+        isAuthenticated = false;
+      }
     }
   }
 
