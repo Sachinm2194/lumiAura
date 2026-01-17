@@ -49,11 +49,12 @@ axiosInstance.interceptors.response.use(
 
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
+        const currentPath = window.location.pathname;
         const requestUrl = originalRequest?.url || "";
         
         // Auth endpoints that should NOT trigger refresh mechanism
         const isLoginEndpoint = requestUrl.includes("/auth/login");
-        const isSignupEndpoint = requestUrl.includes("/auth/signup");
+        const isSignupEndpoint = requestUrl.includes("/auth/signup") || requestUrl.includes("/auth/register");
         const isLogoutEndpoint = requestUrl.includes("/auth/logout");
         const isRefreshEndpoint = requestUrl.includes("/auth/refresh");
         const isVerifyEndpoint = requestUrl.includes("/auth/verify");
@@ -63,7 +64,64 @@ axiosInstance.interceptors.response.use(
           return Promise.reject(error);
         }
         
-        // ... rest of the interceptor code for other endpoints
+        // For logout endpoint, don't refresh - just reject
+        if (isLogoutEndpoint) {
+          return Promise.reject(error);
+        }
+        
+        // For refresh endpoint, if it returns 401, refresh token is invalid - logout
+        if (isRefreshEndpoint) {
+          handleLogout(currentPath);
+          return Promise.reject(error);
+        }
+        
+        // For verify endpoint, getCurrentUser() handles refresh manually - just reject
+        // This prevents double refresh attempts
+        if (isVerifyEndpoint) {
+          return Promise.reject(error);
+        }
+        
+        // For all other endpoints (including /auth/verify-email and all protected APIs), try to refresh token on 401
+        if (!originalRequest._retry) {
+          if (isRefreshing) {
+            // If refresh is already in progress, queue this request
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            })
+              .then(() => {
+                return axiosInstance(originalRequest);
+              })
+              .catch((err) => {
+                return Promise.reject(err);
+              });
+          }
+
+          originalRequest._retry = true;
+          isRefreshing = true;
+
+          try {
+            // Call refresh token API
+            const refreshResult = await refreshToken();
+            
+            if (refreshResult) {
+              // Refresh successful - retry original request
+              processQueue(null, null);
+              return axiosInstance(originalRequest);
+            } else {
+              // Refresh failed - user needs to login
+              processQueue(error, null);
+              handleLogout(currentPath);
+              return Promise.reject(error);
+            }
+          } catch (refreshError) {
+            // Refresh failed - clear queue and logout
+            processQueue(error, null);
+            handleLogout(currentPath);
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
+          }
+        }
       }
     }
     return Promise.reject(error);

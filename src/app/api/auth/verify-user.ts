@@ -1,34 +1,67 @@
 import axiosInstance from "@/lib/helpers/axiosInstance";
 import { handleApiError } from "@/lib/helpers/handleApiError";
+import { refreshToken } from "@/app/api/auth/refresh";
 
 interface AuthMeResponse {
-  id: number;
-  email: string;
-  role: string;
+  authenticated: boolean;
+  user: {
+    id: number;
+    email: string;
+    role: string;
+  };
 }
 
-export async function getCurrentUser(): Promise<AuthMeResponse | null> {
+export async function getCurrentUser(): Promise<{ id: number; email: string; role: string } | null> {
   try {
-    console.log("[getCurrentUser] Calling auth/verify endpoint");
     const response = await axiosInstance.get<AuthMeResponse>("auth/verify", {
       withCredentials: true,
-      timeout: 3000, // 3 second timeout to prevent hanging
+      timeout: 2000, // Reduced from 3s to 2s for faster response
     });
     
-    console.log("[getCurrentUser] Success, user data:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.log("[getCurrentUser] Error:", error.response?.status || error.message);
+    // Check if response has authenticated and user properties
+    if (response.data?.authenticated && response.data?.user) {
+      return response.data.user;
+    }
     
-    // If 401, user is not authenticated (cookie expired/invalid)
+    return null;
+  } catch (error: any) {
+    // If 401, try to refresh token and retry
     if (error.response?.status === 401) {
-      console.log("[getCurrentUser] 401 - User not authenticated");
-      return null;
+      try {
+        // Attempt to refresh token (with 3-second timeout)
+        const refreshResult = await refreshToken();
+        
+        // If refresh returns null, it means refresh failed (401 or other error)
+        // Return null immediately - no need to retry verify
+        if (!refreshResult) {
+          return null;
+        }
+        
+        // Refresh successful - retry the verify call
+        try {
+          const retryResponse = await axiosInstance.get<AuthMeResponse>("auth/verify", {
+            withCredentials: true,
+            timeout: 2000, // Reduced from 3s to 2s for faster response
+          });
+          
+          if (retryResponse.data?.authenticated && retryResponse.data?.user) {
+            return retryResponse.data.user;
+          }
+          
+          // Retry verify didn't return user data
+          return null;
+        } catch (retryError: any) {
+          // Retry failed - user is not authenticated
+          return null;
+        }
+      } catch (refreshError: any) {
+        // Refresh call failed - user is not authenticated
+        return null;
+      }
     }
     
     // For timeout or network errors, silently return null
     if (error.code === "ECONNABORTED" || error.message?.includes("timeout") || !error.response) {
-      console.log("[getCurrentUser] Timeout or network error - assuming not authenticated");
       return null;
     }
     
@@ -37,4 +70,3 @@ export async function getCurrentUser(): Promise<AuthMeResponse | null> {
     return null;
   }
 }
-

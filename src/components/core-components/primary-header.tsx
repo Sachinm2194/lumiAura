@@ -5,6 +5,7 @@ import { Menu, X, User, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Props {
   menuActive: boolean;
@@ -14,12 +15,32 @@ interface Props {
 export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
+  const [showButtons, setShowButtons] = useState(false);
+
+  // Optimistic rendering: Show buttons after max 1.5 seconds, even if still loading
+  // This prevents the header from being stuck in loading state
+  useEffect(() => {
+    if (!isLoading) {
+      setShowButtons(true);
+      return;
+    }
+
+    // If still loading after 1.5 seconds, show buttons optimistically
+    const timer = setTimeout(() => {
+      setShowButtons(true);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const handleLogout = async () => {
     await logout();
     // Redirect to home page after logout (home is public)
     router.push("/");
   };
+
+  // Show skeleton only if loading AND not yet showing buttons
+  const shouldShowSkeleton = isLoading && !showButtons;
 
   return (
     <header className="w-full border-b bg-white shadow fixed top-0 left-0 z-50">
@@ -44,8 +65,8 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
         </Link>
 
         <div className="flex items-center gap-2">
-          {isLoading ? (
-            // Show skeleton loader while checking auth
+          {shouldShowSkeleton ? (
+            // Show skeleton loader while checking auth (max 1.5 seconds)
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 {/* User icon skeleton */}

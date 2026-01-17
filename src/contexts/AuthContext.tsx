@@ -1,9 +1,8 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react"
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { getCurrentUser } from "@/app/api/auth/verify-user"
 import { logout as logoutApi } from "@/app/api/auth/logout"
-import { refreshToken } from "@/app/api/auth/refresh"
 
 // User data type
 export interface User {
@@ -37,20 +36,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const checkAuth = async () => {
       try {
-        console.log("[AuthContext] Starting auth check");
         setIsLoading(true)
         
-        // Safety timeout - always set loading to false after 5 seconds (faster than API timeout)
+        // Safety timeout - ensure loading is set to false after max 2.5 seconds
+        // This prevents infinite loading if getCurrentUser hangs
+        // Reduced from 5s to 2.5s for faster UI response
         timeoutId = setTimeout(() => {
           if (isMounted) {
-            console.warn("[AuthContext] Force setting isLoading to false after 5 seconds");
             setIsLoading(false);
           }
-        }, 5000);
-
+        }, 2500);
+        
         const userData = await getCurrentUser();
         
-        // Clear safety timeout since we got a response
+        // Clear timeout since we got a response
         if (timeoutId) {
           clearTimeout(timeoutId);
           timeoutId = null;
@@ -58,22 +57,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Check if component is still mounted before updating state
         if (!isMounted) {
-          console.log("[AuthContext] Component unmounted, skipping state update");
           return;
         }
         
         if (userData) {
           // User is authenticated, restore user data
-          console.log("[AuthContext] User authenticated:", userData);
           setUser(userData)
         } else {
           // User is not authenticated, keep user as null
-          console.log("[AuthContext] User not authenticated");
           setUser(null)
         }
       } catch (error) {
         // Error already handled in getCurrentUser, just set user to null
-        console.error("[AuthContext] Auth check error:", error);
         if (isMounted) {
           setUser(null)
         }
@@ -82,10 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
-        
         // Always set loading to false, regardless of mount status
         if (isMounted) {
-          console.log("[AuthContext] Setting isLoading to false");
           setIsLoading(false)
         }
       }
@@ -96,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false; // Cleanup: mark as unmounted
       if (timeoutId) {
-        clearTimeout(timeoutId); // Clear timeout on unmount
+        clearTimeout(timeoutId);
       }
     }
   }, []) // Run only once on mount
@@ -114,27 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("auth:logout", handleLogout as EventListener)
     }
   }, [])
-
-  // Periodic token refresh (every 50 seconds to refresh before 1-minute expiry)
-  useEffect(() => {
-    if (!user) return; // Only refresh if user is logged in
-
-    const refreshInterval = setInterval(async () => {
-      try {
-        // Silently refresh token in background
-        await refreshToken();
-        // Token refreshed successfully - new cookies set by backend
-      } catch (error) {
-        // Refresh failed - token might be expired, clear user state
-        setUser(null);
-        clearInterval(refreshInterval);
-      }
-    }, 50000); // Refresh every 50 seconds (before 1-minute access token expiry)
-
-    return () => {
-      clearInterval(refreshInterval);
-    };
-  }, [user]); // Re-run when user changes
 
   const login = (userData: User) => {
     setUser(userData)
@@ -175,4 +147,3 @@ export function useAuth() {
   }
   return context
 }
-
