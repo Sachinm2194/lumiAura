@@ -1,11 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, User, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  Heart,
+  ShoppingCart,
+  Settings,
+  Package,
+  User,
+  LogOut,
+  CircleUser,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface Props {
   menuActive: boolean;
@@ -39,6 +55,17 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
     router.push("/");
   };
 
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user?.email) return "U";
+    const emailParts = user.email.split("@");
+    const namePart = emailParts[0];
+    if (namePart.length >= 2) {
+      return namePart.substring(0, 2).toUpperCase();
+    }
+    return namePart.charAt(0).toUpperCase();
+  };
+
   // Show skeleton only if loading AND not yet showing buttons
   const shouldShowSkeleton = isLoading && !showButtons;
 
@@ -67,39 +94,95 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
         <div className="flex items-center gap-2">
           {shouldShowSkeleton ? (
             // Show skeleton loader while checking auth (max 1.5 seconds)
-            // Matches the unauthenticated button layout: Sign Up (hidden on mobile) + Sign In
+            // Matches authenticated state: Wishlist (icon), Cart (icon), Profile (avatar, hidden on mobile)
             <div className="flex items-center gap-2">
-              {/* Sign Up button skeleton - hidden on mobile */}
-              <div className="hidden md:block h-8 w-20 bg-gray-200 rounded-md animate-pulse"></div>
-              {/* Sign In button skeleton - always visible */}
-              <div className="h-8 w-20 bg-gray-200 rounded-md animate-pulse"></div>
+              {/* Wishlist button skeleton - matches Button size="icon" (size-9) */}
+              <div className="h-9 w-9 bg-gray-200 rounded-md animate-pulse"></div>
+              {/* Cart button skeleton - matches Button size="icon" (size-9) */}
+              <div className="h-9 w-9 bg-gray-200 rounded-md animate-pulse"></div>
+              {/* Profile avatar skeleton - matches Avatar h-9 w-9 rounded-full, hidden on mobile */}
+              <div className="hidden md:block h-9 w-9 bg-gray-200 rounded-full animate-pulse"></div>
             </div>
           ) : isAuthenticated && user ? (
-            // Show user info and logout when authenticated
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm">
-                <User className="h-4 w-4 text-gray-600" />
-                <span className="text-gray-700 font-medium">{user.email}</span>
-                {user.role && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {user.role}
-                  </span>
-                )}
-              </div>
-              <Link href="/cart">
-                <Button variant="outline" size="sm">
-                  Cart
+            // Show Wishlist, Cart, and Profile when authenticated
+            <div className="flex items-center gap-2">
+              {/* Wishlist Button */}
+              <Link href="/wishlist">
+                <Button variant="ghost" size="icon" className="relative">
+                  <Heart className="h-5 w-5" />
                 </Button>
               </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="flex items-center gap-1"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+
+              {/* Cart Button */}
+              <Link href="/cart">
+                <Button variant="ghost" size="icon" className="relative">
+                  <ShoppingCart className="h-5 w-5" />
+                </Button>
+              </Link>
+
+              {/* Profile Popover - Hidden on mobile */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hidden md:flex h-9 w-9 rounded-full p-0"
+                  >
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                        {getUserInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2" align="end">
+                  <div className="space-y-1">
+                    {/* User Info */}
+                    <div className="px-3 py-2 border-b flex items-center gap-2 min-w-0">
+                      <CircleUser className="h-4 w-4 text-primary shrink-0" />
+                      <p className="text-sm font-semibold truncate flex-1 min-w-0">
+                        {user.email}
+                      </p>
+                    </div>
+
+                    {/* Profile Link */}
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-3 px-3 py-2 rounded-sm hover:bg-accent transition-colors text-sm"
+                    >
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+
+                    {/* Orders Link */}
+                    <Link
+                      href="/orders"
+                      className="flex items-center gap-3 px-3 py-2 rounded-sm hover:bg-accent transition-colors text-sm"
+                    >
+                      <Package className="h-4 w-4" />
+                      Orders
+                    </Link>
+
+                    {/* Settings Link */}
+                    <Link
+                      href="/settings"
+                      className="flex items-center gap-3 px-3 py-2 rounded-sm hover:bg-accent transition-colors text-sm"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
+
+                    {/* Logout Button */}
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 px-3 py-2 rounded-sm hover:bg-accent transition-colors text-sm w-full text-left text-destructive"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           ) : (
             // Show login/signup links when not authenticated
@@ -110,9 +193,7 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
                 </Button>
               </Link>
               <Link href="/sign-in">
-                <Button size="sm">
-                  Sign In
-                </Button>
+                <Button size="sm">Sign In</Button>
               </Link>
             </div>
           )}
