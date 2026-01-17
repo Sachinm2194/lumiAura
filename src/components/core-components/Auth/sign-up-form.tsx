@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 import { handleApiError } from "@/lib/helpers/handleApiError"
 import { signUp } from "@/app/api/auth/signup"
+import { toast } from "sonner"
 
 // Validation functions
 const validateFirstName = (firstName: string): string => {
@@ -82,8 +83,8 @@ const validateConfirmPassword = (confirmPassword: string, password: string): str
 
 const validateLastName = (lastName: string): string => {
   // Last name is optional, but if provided, validate format
-  if (lastName.trim() && lastName.trim().length < 2) {
-    return "Last name must be at least 2 characters"
+  if (lastName.trim() && lastName.trim().length < 1) {
+    return "Last name must be at least 1 character"
   }
   if (lastName.trim() && lastName.trim().length > 50) {
     return "Last name must be no more than 50 characters"
@@ -280,8 +281,16 @@ export default function SignUpForm() {
       }
 
       const response = await signUp(payload)
-      
       if (response) {
+        // Show success toast with message and email
+        const successMessage = response.message || "User registered successfully. Please check your email to verify your account."
+        const userEmail = response.user?.email || formData.email
+        
+        toast.success(successMessage, {
+          description: `Verification email sent to ${userEmail}`,
+          duration: 5000,
+        })
+        
         setIsLoading(false)
         setFormData({
           firstName: "",
