@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -44,7 +44,23 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
         </Link>
 
         <div className="flex items-center gap-2">
-          {isAuthenticated && user ? (
+          {isLoading ? (
+            // Show skeleton loader while checking auth
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {/* User icon skeleton */}
+                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+                {/* Email skeleton */}
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                {/* Role badge skeleton */}
+                <div className="h-5 w-12 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              {/* Cart button skeleton */}
+              <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse"></div>
+              {/* Logout button skeleton */}
+              <div className="h-8 w-20 bg-gray-200 rounded-md animate-pulse"></div>
+            </div>
+          ) : isAuthenticated && user ? (
             // Show user info and logout when authenticated
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-sm">
