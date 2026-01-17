@@ -59,7 +59,7 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
 
         <Link
           href="/"
-          className="mx-auto text-2xl font-extrabold uppercase tracking-widest"
+          className="mx-auto text-lg md:text-2xl font:bold  md:font-extrabold uppercase tracking-widest"
         >
           LumiAura GlowSkin
         </Link>
@@ -67,18 +67,11 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
         <div className="flex items-center gap-2">
           {shouldShowSkeleton ? (
             // Show skeleton loader while checking auth (max 1.5 seconds)
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                {/* User icon skeleton */}
-                <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
-                {/* Email skeleton */}
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                {/* Role badge skeleton */}
-                <div className="h-5 w-12 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-              {/* Cart button skeleton */}
-              <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse"></div>
-              {/* Logout button skeleton */}
+            // Matches the unauthenticated button layout: Sign Up (hidden on mobile) + Sign In
+            <div className="flex items-center gap-2">
+              {/* Sign Up button skeleton - hidden on mobile */}
+              <div className="hidden md:block h-8 w-20 bg-gray-200 rounded-md animate-pulse"></div>
+              {/* Sign In button skeleton - always visible */}
               <div className="h-8 w-20 bg-gray-200 rounded-md animate-pulse"></div>
             </div>
           ) : isAuthenticated && user ? (
@@ -111,14 +104,14 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
           ) : (
             // Show login/signup links when not authenticated
             <div className="flex items-center gap-2">
-              <Link href="/sign-in">
+              <Link href="/sign-up" className="hidden md:block">
                 <Button variant="ghost" size="sm">
-                  Sign In
+                  Sign Up
                 </Button>
               </Link>
-              <Link href="/sign-up">
+              <Link href="/sign-in">
                 <Button size="sm">
-                  Sign Up
+                  Sign In
                 </Button>
               </Link>
             </div>
