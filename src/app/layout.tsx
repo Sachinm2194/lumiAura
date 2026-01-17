@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 import TopLoader from "@/components/core-components/top-loader";
+import BottomNavigationFooter from "@/components/core-components/bottom-navigation-footer";
 
 
 const geistSans = Geist({
@@ -42,6 +43,7 @@ export default function RootLayout({
         <AuthProvider>
           <Toaster position="top-right" />
           {children}
+          <BottomNavigationFooter />
         </AuthProvider>
       </body>
     </html>
