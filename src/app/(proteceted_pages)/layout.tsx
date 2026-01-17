@@ -10,14 +10,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   // Redirect if auth check completes and user is not authenticated
-  // Note: We can't check document.cookie for HTTP-only cookies, so we rely on:
-  // 1. Middleware (server-side) - redirects immediately if no cookies
-  // 2. Auth context (client-side) - redirects after auth check if not authenticated
+  // Wait for isLoading to be false before redirecting
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.replace(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
     }
-  }, [isAuthenticated, router, pathname]);
+  }, [isAuthenticated, isLoading, router, pathname]);
 
   // Show loading spinner while checking auth
   if (isLoading) {

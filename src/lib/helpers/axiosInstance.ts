@@ -49,7 +49,6 @@ axiosInstance.interceptors.response.use(
 
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        const currentPath = window.location.pathname;
         const requestUrl = originalRequest?.url || "";
         
         // Auth endpoints that should NOT trigger refresh mechanism
@@ -59,78 +58,12 @@ axiosInstance.interceptors.response.use(
         const isRefreshEndpoint = requestUrl.includes("/auth/refresh");
         const isVerifyEndpoint = requestUrl.includes("/auth/verify");
         
-        // Don't refresh if it's login/signup/logout/refresh/verify endpoints
-        // Verify endpoint 401 is expected when user is not logged in - don't try to refresh
-        // Login endpoint 401 is expected when credentials are wrong - don't try to refresh
-        if (isLoginEndpoint || isSignupEndpoint || isLogoutEndpoint || isRefreshEndpoint || isVerifyEndpoint) {
-          // For login/signup endpoints, 401 is a valid response (wrong credentials)
-          // Just reject the error and let the form handle it - don't do any logout/redirect
-          if (isLoginEndpoint || isSignupEndpoint) {
-            return Promise.reject(error);
-          }
-          
-          // For logout/refresh/verify endpoints, handle logout/redirect
-          const isAuthPage = currentPath.startsWith("/sign-in") || 
-                            currentPath.startsWith("/sign-up") ||
-                            currentPath.startsWith("/verify-email");
-          
-          const isProtectedRoute = currentPath.startsWith("/cart") || 
-                                  currentPath.startsWith("/dashboard") ||
-                                  currentPath.startsWith("/profile");
-
-          if (!isAuthPage) {
-            window.dispatchEvent(new CustomEvent("auth:logout", { 
-              detail: { reason: "session_expired" } 
-            }));
-
-            if (isProtectedRoute) {
-              window.location.href = "/sign-in?expired=true";
-            }
-          }
+        // For login/signup endpoints, 401 is expected (wrong credentials) - just reject
+        if (isLoginEndpoint || isSignupEndpoint) {
           return Promise.reject(error);
         }
         
-        // For other endpoints, try to refresh token
-        if (!originalRequest._retry) {
-          if (isRefreshing) {
-            // If refresh is already in progress, queue this request
-            return new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject });
-            })
-              .then(() => {
-                return axiosInstance(originalRequest);
-              })
-              .catch((err) => {
-                return Promise.reject(err);
-              });
-          }
-
-          originalRequest._retry = true;
-          isRefreshing = true;
-
-          try {
-            // Call refresh token API
-            const refreshResponse = await refreshToken();
-            
-            if (refreshResponse) {
-              // Refresh successful - retry original request
-              processQueue(null, null);
-              return axiosInstance(originalRequest);
-            } else {
-              // Refresh failed - user needs to login
-              processQueue(error, null);
-              handleLogout(currentPath);
-              return Promise.reject(error);
-            }
-          } catch (refreshError) {
-            // Refresh failed - clear queue and logout
-            processQueue(error, null);
-            handleLogout(currentPath);
-            return Promise.reject(refreshError);
-          } finally {
-            isRefreshing = false;
-          }
-        }
+        // ... rest of the interceptor code for other endpoints
       }
     }
     return Promise.reject(error);
