@@ -11,6 +11,7 @@ interface SearchBarProps {
   className?: string;
   isScrolled?: boolean;
   maxWidth?: string;
+  showMobileIcon?: boolean; // If true, shows icon on mobile and opens overlay
 }
 
 export function SearchBar({
@@ -19,6 +20,7 @@ export function SearchBar({
   className = "",
   isScrolled = false,
   maxWidth = "w-sm max-w-[400px] md:max-w-[500px] lg:max-w-[650px] xl:max-w-[800px]",
+  showMobileIcon = false,
 }: SearchBarProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,10 +67,55 @@ export function SearchBar({
     }
   };
 
-  if (isSearchOpen) {
+  // Mobile overlay view (when showMobileIcon is true and search is open on mobile)
+  const renderMobileOverlay = () => {
+    if (!showMobileIcon || !isSearchOpen) return null;
+
+    return (
+      <>
+        {/* Backdrop overlay */}
+        <div
+          className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          onClick={handleClose}
+        />
+        {/* Search bar overlay - slides from bottom of header (h-16 = 64px when not scrolled, h-14 = 56px when scrolled) */}
+        <div
+          className={`fixed left-0 right-0 z-50 bg-background border-b border-border shadow-lg rounded-full md:hidden animate-in slide-in-from-top duration-300 ${
+            isScrolled ? "top-14" : "top-16"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center gap-2 px-4 py-3 ">
+            <Search className="text-muted-foreground shrink-0 h-5 w-5" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder={placeholder}
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 px-0 text-base bg-transparent flex-1 min-w-0 shadow-none"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              className="h-8 w-8 shrink-0"
+            >
+              <CloseIcon className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // Desktop inline view (md+ screens) - always shows inline when open
+  const renderDesktopSearch = () => {
+    if (!isSearchOpen) return null;
+    
     return (
       <div
-        className={`flex items-center gap-2 bg-background border border-border/50 rounded-full px-3 py-1.5 shadow-xs w-full ${maxWidth} transition-all duration-300 ${className}`}
+        className={`hidden md:flex items-center gap-2 bg-background border border-border/50 rounded-full px-3 py-1.5 shadow-xs w-full ${maxWidth} transition-all duration-300 ${className}`}
       >
         <Search
           className={`text-muted-foreground shrink-0 ${isScrolled ? "h-4 w-4" : "h-4 w-4"}`}
@@ -91,19 +138,29 @@ export function SearchBar({
         </Button>
       </div>
     );
-  }
+  };
 
+  // Render icon button and conditional overlay/inline search
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setIsSearchOpen(true)}
-      className={`relative transition-transform duration-300 ${className}`}
-    >
-      <Search
-        className={`transition-all duration-300 ${isScrolled ? "h-4 w-4" : "h-5 w-5"}`}
-      />
-    </Button>
+    <>
+      {/* Mobile overlay - only on mobile when showMobileIcon is true */}
+      {renderMobileOverlay()}
+      {/* Desktop inline search - only on md+ screens */}
+      {renderDesktopSearch()}
+      {/* Icon button - visible on mobile always when showMobileIcon, visible on desktop only when search closed */}
+      {(!isSearchOpen || showMobileIcon) && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSearchOpen(true)}
+          className={`relative transition-transform duration-300 ${showMobileIcon && isSearchOpen ? "md:hidden" : ""} ${className}`}
+        >
+          <Search
+            className={`transition-all duration-300 ${isScrolled ? "h-4 w-4" : "h-5 w-5"}`}
+          />
+        </Button>
+      )}
+    </>
   );
 }
 

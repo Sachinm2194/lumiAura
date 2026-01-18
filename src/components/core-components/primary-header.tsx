@@ -124,10 +124,10 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
         <div className="flex items-center gap-2 ">
           {shouldShowSkeleton ? (
             // Show skeleton loader while checking auth (max 1.5 seconds)
-            // Matches authenticated state: Search (md+), Wishlist (icon), Cart (icon), Profile (avatar, hidden on mobile)
+            // Matches authenticated state: Search (all screens), Wishlist (icon), Cart (icon), Profile (avatar, hidden on mobile)
             <div className="flex items-center gap-2">
-              {/* Search button skeleton - hidden on mobile, shown on md+ */}
-              <div className="hidden md:block h-9 w-9 bg-muted rounded-md animate-pulse"></div>
+              {/* Search button skeleton - shown on all screens */}
+              <div className="h-9 w-9 bg-muted rounded-md animate-pulse"></div>
               {/* Wishlist button skeleton - matches Button size="icon" (size-9) */}
               <div className="h-9 w-9 bg-muted rounded-md animate-pulse"></div>
               {/* Cart button skeleton - matches Button size="icon" (size-9) */}
@@ -138,9 +138,9 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
           ) : isAuthenticated && user ? (
             // Show Search, Wishlist, Cart, and Profile when authenticated
             <div className="flex items-center gap-2 ">
-              {/* Search Button/Field - Only visible on md+ screens */}
-              <div className="hidden md:block">
-                <SearchBar isScrolled={isScrolled} />
+              {/* Search Button/Field - Icon on all screens, inline on md+, overlay on mobile */}
+              <div className="md:block">
+                <SearchBar isScrolled={isScrolled} showMobileIcon={true} />
               </div>
 
               {/* Wishlist Button */}
@@ -226,9 +226,9 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
           ) : (
             // Show Search and login/signup links when not authenticated
             <div className="flex items-center gap-2  ">
-              {/* Search Button/Field - Only visible on md+ screens */}
-              <div className="hidden md:block">
-                <SearchBar isScrolled={isScrolled} />
+              {/* Search Button/Field - Icon on all screens, inline on md+, overlay on mobile */}
+              <div className="md:block">
+                <SearchBar isScrolled={isScrolled} showMobileIcon={true} />
               </div>
 
               <Link href="/sign-up" className="hidden md:block">
