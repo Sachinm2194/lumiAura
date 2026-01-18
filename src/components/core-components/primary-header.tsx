@@ -32,6 +32,18 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Detect scroll to shrink header and add shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 20); // Shrink after 20px scroll
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Optimistic rendering: Show buttons after max 1.5 seconds, even if still loading
   // This prevents the header from being stuck in loading state
@@ -70,9 +82,19 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
   const shouldShowSkeleton = isLoading && !showButtons;
 
   return (
-    <header className="w-full border-b bg-background shadow fixed top-0 left-0 z-50">
-      <div className="flex h-16 items-center justify-between gap-4 px-6">
-        <button
+    <header
+      className={`w-full border-b bg-background fixed top-0 left-0 z-50 transition-all duration-300 ease-in-out ${
+        isScrolled
+          ? "h-14 shadow-md backdrop-blur-sm bg-background/95 border-b/50"
+          : "h-16 shadow-sm"
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between gap-4 px-6 transition-all duration-300 ${
+          isScrolled ? "h-14" : "h-16"
+        }`}
+      >
+        {/* <button
           onClick={onMenuToggle}
           aria-label="Toggle categories menu"
           className="p-2 rounded hover:bg-accent transition"
@@ -82,11 +104,15 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
           ) : (
             <Menu className="h-6 w-6" />
           )}
-        </button>
+        </button> */}
 
         <Link
           href="/"
-          className="mx-auto text-lg md:text-2xl font:bold  md:font-extrabold uppercase tracking-widest"
+          className={` font-bold uppercase tracking-widest transition-all duration-300 ${
+            isScrolled
+              ? "text-base md:text-xl"
+              : "text-lg md:text-2xl md:font-extrabold"
+          }`}
         >
           LumiAura GlowSkin
         </Link>
@@ -108,15 +134,15 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
             <div className="flex items-center gap-2">
               {/* Wishlist Button */}
               <Link href="/wishlist">
-                <Button variant="ghost" size="icon" className="relative">
-                  <Heart className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="relative transition-transform duration-300">
+                  <Heart className={`transition-all duration-300 ${isScrolled ? "h-4 w-4" : "h-5 w-5"}`} />
                 </Button>
               </Link>
 
               {/* Cart Button */}
               <Link href="/cart">
-                <Button variant="ghost" size="icon" className="relative">
-                  <ShoppingCart className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="relative transition-transform duration-300">
+                  <ShoppingCart className={`transition-all duration-300 ${isScrolled ? "h-4 w-4" : "h-5 w-5"}`} />
                 </Button>
               </Link>
 
@@ -126,9 +152,11 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="hidden md:flex h-9 w-9 rounded-full p-0"
+                    className={`hidden md:flex rounded-full p-0 transition-all duration-300 ${
+                      isScrolled ? "h-8 w-8" : "h-9 w-9"
+                    }`}
                   >
-                    <Avatar className="h-9 w-9">
+                    <Avatar className={`transition-all duration-300 ${isScrolled ? "h-8 w-8" : "h-9 w-9"}`}>
                       <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                         {getUserInitials()}
                       </AvatarFallback>
@@ -193,7 +221,9 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
                 </Button>
               </Link>
               <Link href="/sign-in">
-                <Button size="sm">Sign In</Button>
+                <Button size={isScrolled ? "sm" : "sm"} className="transition-all duration-300">
+                  Sign In
+                </Button>
               </Link>
             </div>
           )}

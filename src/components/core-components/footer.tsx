@@ -124,7 +124,7 @@ export default function Footer() {
       </div>
       {/* Copyright */}
       <div className="mt-8 pt-8 border-t border-border text-center text-muted-foreground">
-        &copy; {new Date().getFullYear()} ILEM JAPAN. All rights reserved.
+        &copy; {new Date().getFullYear()} LUMIAURA GLOWSKIN. All rights reserved.
       </div>
     </footer>
   );
