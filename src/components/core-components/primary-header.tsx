@@ -22,6 +22,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SearchBar } from "@/components/core-components/search-bar";
 
 interface Props {
   menuActive: boolean;
@@ -78,19 +79,20 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
     return namePart.charAt(0).toUpperCase();
   };
 
+
   // Show skeleton only if loading AND not yet showing buttons
   const shouldShowSkeleton = isLoading && !showButtons;
 
   return (
     <header
-      className={`w-full border-b bg-background fixed top-0 left-0 z-50 transition-all duration-300 ease-in-out ${
+      className={`w-full border-b bg-background  fixed top-0 left-0 z-50 transition-all duration-300 ease-in-out ${
         isScrolled
           ? "h-14 shadow-md backdrop-blur-sm bg-background/95 border-b/50"
           : "h-16 shadow-sm"
       }`}
     >
       <div
-        className={`flex items-center justify-between gap-4 px-6 transition-all duration-300 ${
+        className={`flex items-center justify-between  gap-4 px-6 transition-all duration-300 ${
           isScrolled ? "h-14" : "h-16"
         }`}
       >
@@ -99,13 +101,14 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
           aria-label="Toggle categories menu"
           className="p-2 rounded hover:bg-accent transition"
         >
-          {menuActive ? (
+          {menuActive ? 
             <X className="h-6 w-6" />
           ) : (
             <Menu className="h-6 w-6" />
           )}
         </button> */}
 
+        <div className="">
         <Link
           href="/"
           className={` font-bold uppercase tracking-widest transition-all duration-300 ${
@@ -116,12 +119,15 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
         >
           LumiAura GlowSkin
         </Link>
+        </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ">
           {shouldShowSkeleton ? (
             // Show skeleton loader while checking auth (max 1.5 seconds)
-            // Matches authenticated state: Wishlist (icon), Cart (icon), Profile (avatar, hidden on mobile)
+            // Matches authenticated state: Search (md+), Wishlist (icon), Cart (icon), Profile (avatar, hidden on mobile)
             <div className="flex items-center gap-2">
+              {/* Search button skeleton - hidden on mobile, shown on md+ */}
+              <div className="hidden md:block h-9 w-9 bg-muted rounded-md animate-pulse"></div>
               {/* Wishlist button skeleton - matches Button size="icon" (size-9) */}
               <div className="h-9 w-9 bg-muted rounded-md animate-pulse"></div>
               {/* Cart button skeleton - matches Button size="icon" (size-9) */}
@@ -130,8 +136,13 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
               <div className="hidden md:block h-9 w-9 bg-muted rounded-full animate-pulse"></div>
             </div>
           ) : isAuthenticated && user ? (
-            // Show Wishlist, Cart, and Profile when authenticated
-            <div className="flex items-center gap-2">
+            // Show Search, Wishlist, Cart, and Profile when authenticated
+            <div className="flex items-center gap-2 ">
+              {/* Search Button/Field - Only visible on md+ screens */}
+              <div className="hidden md:block">
+                <SearchBar isScrolled={isScrolled} />
+              </div>
+
               {/* Wishlist Button */}
               <Link href="/wishlist">
                 <Button variant="ghost" size="icon" className="relative transition-transform duration-300">
@@ -213,8 +224,13 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
               </Popover>
             </div>
           ) : (
-            // Show login/signup links when not authenticated
-            <div className="flex items-center gap-2">
+            // Show Search and login/signup links when not authenticated
+            <div className="flex items-center gap-2  ">
+              {/* Search Button/Field - Only visible on md+ screens */}
+              <div className="hidden md:block">
+                <SearchBar isScrolled={isScrolled} />
+              </div>
+
               <Link href="/sign-up" className="hidden md:block">
                 <Button variant="ghost" size="sm">
                   Sign Up
