@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
@@ -5,93 +7,120 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function ImageCarousel() {
-const images = [
-  "/Images/LumiAura-GlowSkin.png",
-  "/Images/carouselImg1.jpg",
-  "/Images/carouselImg2.jpg",
-  "/Images/carouselImg4.jpg",
-  // Add as many as you have
-];
-
+  const images = [
+    "/Images/LumiAura-GlowSkin.png",
+    "/Images/carouselImg1.jpg",
+    "/Images/carouselImg2.jpg",
+    "/Images/carouselImg4.jpg",
+  ];
 
   const autoplay = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: false })
+    Autoplay({ delay: 4000, stopOnInteraction: false })
   );
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    autoplay.current,
-  ]);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { 
+      loop: true,
+      align: "center",
+      slidesToScroll: 1,
+    },
+    [autoplay.current]
+  );
   const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [isHovered, setIsHovered] = React.useState(false);
 
   React.useEffect(() => {
     if (!emblaApi) return;
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
     emblaApi.on("select", onSelect);
     onSelect();
+
+    // Pause autoplay on hover
+    if (isHovered) {
+      autoplay.current?.stop();
+    } else {
+      autoplay.current?.play();
+    }
+  }, [emblaApi, isHovered]);
+
+  const scrollPrev = React.useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = React.useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
   return (
-    <div className="relative w-full overflow-hidden" ref={emblaRef}>
+    <div
+      className="relative w-full overflow-hidden group"
+      ref={emblaRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="flex touch-pan-y">
         {images.map((src, index) => (
-          <motion.div
+          <div
             key={index}
-            className="min-w-full relative aspect-[16/5.5] flex-shrink-0 overflow-hidden rounded"
-            initial={{ opacity: 0.6, scale: 0.98 }}
-            animate={{
-              opacity: selectedIndex === index ? 1 : 0.6,
-              scale: selectedIndex === index ? 1 : 0.98,
-              transition: { duration: 0.6 },
-            }}
+            className="min-w-full relative flex-shrink-0 overflow-hidden"
           >
-            
-            <img
-              src={src}
-              alt={`Slide ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
+            {/* Consistent height: Mobile h-[280px], Desktop h-[450px] - all images same height */}
+            <div className="relative h-[280px] md:h-[450px] w-full">
+              <img
+                src={src}
+                alt={`Slide ${index + 1}`}
+                className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                loading={index === 0 ? "eager" : "lazy"}
+              />
 
-            {index === selectedIndex && (
-              <>
-            {console.log({src})}
-
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-black/40 to-transparent z-10" />
-                  <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-black/40 to-transparent z-10" />
-                </div>
-                <button
-                  onClick={() => emblaApi?.scrollPrev()}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/70 backdrop-blur-sm rounded-full p-2 shadow hover:bg-background z-20 transition-colors"
-                  aria-label="Previous"
-                >
-                  <ChevronLeft className="w-5 h-5 text-foreground cursor-pointer" />
-                </button>
-                <button
-                  onClick={() => emblaApi?.scrollNext()}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/70 backdrop-blur-sm rounded-full p-2 shadow hover:bg-background z-20 transition-colors"
-                  aria-label="Next"
-                >
-                  <ChevronRight className="w-5 h-5 text-foreground cursor-pointer" />
-                </button>
-              </>
-            )}
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2 z-20">
-              {images.map((_, dotIdx) => (
-                <motion.span
-                  key={dotIdx}
-                  className="w-3 h-3 rounded-full border border-white"
-                  animate={{
-                    backgroundColor:
-                      dotIdx === selectedIndex ? "#ffffff" : "rgba(255,255,255,0.4)",
-                    scale: dotIdx === selectedIndex ? 1.3 : 1,
-                  }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                />
-              ))}
+              {/* Gradient overlay for better text/button visibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
-      
+
+      {/* Navigation buttons - always visible, positioned outside slides */}
+      <button
+        onClick={scrollPrev}
+        className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 bg-background/90 backdrop-blur-md rounded-full p-2.5 md:p-3 shadow-lg hover:bg-background z-30 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100 hover:scale-110 active:scale-95"
+        aria-label="Previous slide"
+      >
+        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-foreground" />
+      </button>
+      <button
+        onClick={scrollNext}
+        className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 bg-background/90 backdrop-blur-md rounded-full p-2.5 md:p-3 shadow-lg hover:bg-background z-30 transition-all duration-300 md:opacity-0 md:group-hover:opacity-100 hover:scale-110 active:scale-95"
+        aria-label="Next slide"
+      >
+        <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-foreground" />
+      </button>
+
+      {/* Dot indicators - positioned outside slides */}
+      <div className="absolute bottom-3 md:bottom-6 left-0 right-0 flex justify-center items-center gap-2 z-30">
+        {images.map((_, dotIdx) => (
+          <button
+            key={dotIdx}
+            onClick={() => emblaApi?.scrollTo(dotIdx)}
+            className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full transition-all duration-300 p-1"
+            aria-label={`Go to slide ${dotIdx + 1}`}
+          >
+            <motion.span
+              className="block rounded-full transition-all duration-300"
+              animate={{
+                backgroundColor:
+                  dotIdx === selectedIndex ? "#F8981D" : "rgba(255, 255, 255, 0.6)",
+                scale: dotIdx === selectedIndex ? 1.15 : 1,
+              }}
+              initial={false}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              style={{
+                width: "8px",
+                height: "8px",
+              }}
+            />
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
