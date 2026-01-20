@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { Star } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Product, ProductCardProps } from '@/types/product';
 
-export default function ProductCard({ product, className, onClick, isAd = false }: ProductCardProps) {
+export default function ProductCard({ 
+  product, 
+  className, 
+  onClick, 
+  isAd = false,
+  onWishlistToggle,
+  initialWishlisted = false
+}: ProductCardProps) {
   // Get default variant (or first variant if no default)
   const defaultVariant = product.variants.find(v => v.isDefault) || product.variants[0];
   
@@ -26,6 +33,15 @@ export default function ProductCard({ product, className, onClick, isAd = false 
   };
   
   const [imageUrl, setImageUrl] = useState(getImageUrl());
+  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
+  
+  // Handle wishlist toggle
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    const newWishlistState = !isWishlisted;
+    setIsWishlisted(newWishlistState);
+    onWishlistToggle?.(product, newWishlistState);
+  };
   
   const handleImageError = () => {
     // If slug-based image fails, try lowercase or use placeholder
@@ -87,9 +103,25 @@ export default function ProductCard({ product, className, onClick, isAd = false 
           onError={handleImageError}
         />
 
-        {/* AD Badge */}
+        {/* Wishlist Icon - Top Right */}
+        <button
+          onClick={handleWishlistClick}
+          className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-md transition-all duration-200 hover:scale-110 z-10"
+          aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+        >
+          <Heart
+            className={cn(
+              'w-4 h-4 transition-all duration-200',
+              isWishlisted
+                ? 'fill-red-500 text-red-500'
+                : 'fill-transparent text-gray-700 hover:text-red-500'
+            )}
+          />
+        </button>
+
+        {/* AD Badge - Top Left (moved to avoid conflict with wishlist) */}
         {isAd && (
-          <div className="absolute top-2 right-2 bg-gray-600 text-white text-xs font-medium px-2 py-1 rounded">
+          <div className="absolute top-2 left-2 bg-gray-600 text-white text-xs font-medium px-2 py-1 rounded z-10">
             AD
           </div>
         )}

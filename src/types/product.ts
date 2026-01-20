@@ -73,5 +73,7 @@ export interface ProductCardProps {
   className?: string;
   onClick?: (product: Product) => void;
   isAd?: boolean; // Show "AD" badge
+  onWishlistToggle?: (product: Product, isWishlisted: boolean) => void;
+  initialWishlisted?: boolean; // Sync with backend wishlist state
 }
 
