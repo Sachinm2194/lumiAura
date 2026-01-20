@@ -1,42 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PrimaryHeader } from "@/components/core-components/primary-header";
-import SecondaryHeader from "@/components/core-components/secondary-header";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { ImageCarousel } from "@/components/core-components/imageCarousel";
 import Footer from "@/components/core-components/footer";
 import IngredientsSection from "@/components/core-components/IngredientsSection";
 import { useHeaderIntersection } from "@/hooks/useHeaderIntersection";
+import { GetAllProducts } from "./api/auth/products";
 
 export default function Home() {
   const [headerRef, outOfView] = useHeaderIntersection();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const showSticky = outOfView || menuOpen;
+  useEffect(() => {
+    GetAllProducts().then((data) => {
+      console.log(data );
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
       <PrimaryHeader
-        // stickyVisible={showSticky}
         menuActive={menuOpen}
         onMenuToggle={() => setMenuOpen((v) => !v)}
       />
-
-      {/* Secondary header categories menu inside Sheet drawer */}
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="left" className="p-0 w-[280px]">
-          <SheetTitle className="p-0 m-0"/>
-          <SecondaryHeader />
-        </SheetContent>
-      </Sheet>
-
       <div ref={headerRef} />
 
       <ImageCarousel />
 
-      <main className="pt-0 w-full px-10">
-        <section className="py-16">
+      <main className="pt-0 w-full px-2 md:px-10">
+        <section className="py-4">
           <h2 className="text-3xl font-bold text-center mb-10 text-foreground">
             Featured Beauty Products
           </h2>

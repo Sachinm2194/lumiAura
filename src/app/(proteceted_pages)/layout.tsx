@@ -1,14 +1,16 @@
 "use client"
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { PrimaryHeader } from "@/components/core-components/primary-header";
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const hasRedirected = useRef(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Redirect immediately when we know user is not authenticated
   // Redirect if: (loading completed AND not authenticated) OR (short delay passed AND not authenticated)
@@ -49,5 +51,13 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <PrimaryHeader
+        menuActive={menuOpen}
+        onMenuToggle={() => setMenuOpen((v) => !v)}
+      />
+      <main className="pt-16 w-full px-2 md:px-10">{children}</main>
+    </>
+  );
 }
