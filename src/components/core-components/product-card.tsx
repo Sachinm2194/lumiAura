@@ -1,0 +1,113 @@
+import React from 'react';
+import { Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Product, ProductCardProps } from '@/types/product';
+
+export default function ProductCard({ product, className, onClick, isAd = false }: ProductCardProps) {
+  // Get default variant (or first variant if no default)
+  const defaultVariant = product.variants.find(v => v.isDefault) || product.variants[0];
+  
+  // Get primary image (or first image if no primary)
+  const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+  const imageUrl = primaryImage?.url || '/placeholder-product.jpg';
+  
+  // Parse prices from strings
+  const currentPrice = parseFloat(defaultVariant?.sellingPrice || '0');
+  const originalPrice = parseFloat(defaultVariant?.mrp || '0');
+  
+  // Parse rating
+  const rating = parseFloat(product.averageRating || '0');
+  const reviewCount = product.reviewCount || 0;
+  
+  // Get brand from category or use a default
+  const brand = product.category?.name || 'LUMIAURA';
+
+  // Format price to Indian Rupee format
+  const formatPrice = (price: number) => {
+    return `Rs. ${price.toLocaleString('en-IN')}`;
+  };
+
+  // Format review count (e.g., 12500 -> "12.5k", 1100 -> "1.1k")
+  const formatReviewCount = (count: number | string) => {
+    if (typeof count === 'string') return count;
+    if (count >= 1000) {
+      const k = (count / 1000).toFixed(1);
+      return k.endsWith('.0') ? `${k.replace('.0', '')}k` : `${k}k`;
+    }
+    return count.toString();
+  };
+
+  // Calculate discount percentage
+  const calculatedDiscount = originalPrice && currentPrice && originalPrice > currentPrice
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : null;
+
+  return (
+    <div
+      className={cn(
+        'group relative flex flex-col bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer md:h-[400px]',
+        className
+      )}
+      onClick={() => onClick?.(product)}
+    >
+      {/* Image Container */}
+      <div className="relative w-full aspect-[5/6] md:aspect-[4/5] lg:aspect-[3/4] bg-muted overflow-hidden">
+        <img
+          src={imageUrl}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+
+        {/* AD Badge */}
+        {isAd && (
+          <div className="absolute top-2 right-2 bg-gray-600 text-white text-xs font-medium px-2 py-1 rounded">
+            AD
+          </div>
+        )}
+
+        {/* Rating Overlay */}
+        <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded flex items-center gap-1">
+          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+          <span>{rating}</span>
+          <span className="text-white/80">({formatReviewCount(reviewCount)})</span>
+        </div>
+      </div>
+
+      {/* Product Details */}
+      <div className="p-2 md:p-3 space-y-1 md:space-y-1.5 flex-1 flex flex-col">
+        {/* Brand */}
+        <p className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wide">
+          {brand}
+        </p>
+
+        {/* Product Name */}
+        <h3 className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+          {product.name}
+        </h3>
+
+        {/* Price Section */}
+        <div className="flex items-center gap-1.5 md:gap-2 flex-wrap mt-1 md:mt-2">
+          {/* Current Price */}
+          <span className="text-sm md:text-base font-bold text-foreground">
+            {formatPrice(currentPrice)}
+          </span>
+
+          {/* Original Price (if exists) */}
+          {originalPrice && originalPrice > currentPrice && (
+            <>
+              <span className="text-xs md:text-sm text-muted-foreground line-through">
+                {formatPrice(originalPrice)}
+              </span>
+              {/* Discount */}
+              {calculatedDiscount && (
+                <span className="text-[10px] md:text-xs font-semibold text-primary">
+                  ({calculatedDiscount}% OFF)
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

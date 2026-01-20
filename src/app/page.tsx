@@ -7,16 +7,29 @@ import Footer from "@/components/core-components/footer";
 import IngredientsSection from "@/components/core-components/IngredientsSection";
 import { useHeaderIntersection } from "@/hooks/useHeaderIntersection";
 import { GetAllProducts } from "./api/auth/products";
+import ProductCard from "@/components/core-components/product-card";
+import ProductCardSkeleton from "@/components/core-components/product-card-skeleton";
 
 export default function Home() {
   const [headerRef, outOfView] = useHeaderIntersection();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    GetAllProducts().then((data) => {
-      console.log(data );
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const getAllProducts = async () => {
+      setIsLoading(true);
+      try {
+        const data = await GetAllProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    getAllProducts();
+  }, []);
 
   return (
     <>
@@ -33,33 +46,17 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center mb-10 text-foreground">
             Featured Beauty Products
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4">
-            {[
-              { title: "Matcha Glow Cleanser", img: "/Images/prod1.jpg" },
-              { title: "Sakura Blossom Mist", img: "/Images/prod2.jpg" },
-              { title: "Rice Water Serum", img: "/Images/carouselImg4.jpg" },
-            ].map((product, index) => (
-              <div
-                key={index}
-                className="group relative overflow-hidden rounded-xl shadow-lg bg-card text-card-foreground"
-              >
-                <img
-                  src={product.img}
-                  alt={product.title}
-                  className="w-full h-[350px] object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-
-                <div className="absolute bottom-0 left-0 right-0 bg-foreground/60 px-4 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2 rounded-md transition">
-                    Add to Cart
-                  </button>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-foreground">{product.title}</h3>
-                </div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-10 max-w-7xl mx-auto">
+            {isLoading ? (
+              // Show 8 skeleton loaders
+              Array.from({ length: 8 }).map((_, index) => (
+                <ProductCardSkeleton key={`skeleton-${index}`} />
+              ))
+            ) : (
+              products.map((product: any) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            )}
           </div>
         </section>
         <IngredientsSection />
