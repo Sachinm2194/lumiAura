@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Product, ProductCardProps } from '@/types/product';
@@ -7,9 +7,37 @@ export default function ProductCard({ product, className, onClick, isAd = false 
   // Get default variant (or first variant if no default)
   const defaultVariant = product.variants.find(v => v.isDefault) || product.variants[0];
   
-  // Get primary image (or first image if no primary)
-  const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
-  const imageUrl = primaryImage?.url || '/placeholder-product.jpg';
+  // Get image URL - prioritize backend images, fallback to slug-based local image
+  const getImageUrl = () => {
+    // First, check if backend provides images
+    const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+    if (primaryImage?.url) {
+      return primaryImage.url;
+    }
+    
+    // If no backend image, use slug to map to local image
+    if (product.slug) {
+      // Construct path: /Images/{slug}.PNG
+      return `/Images/${product.slug}.PNG`;
+    }
+    
+    // Final fallback
+    return '/Images/placeholder-product.jpg';
+  };
+  
+  const [imageUrl, setImageUrl] = useState(getImageUrl());
+  
+  const handleImageError = () => {
+    // If slug-based image fails, try lowercase or use placeholder
+    if (product.slug && imageUrl.includes(product.slug)) {
+      const lowerCaseUrl = `/Images/${product.slug.toLowerCase()}.PNG`;
+      if (imageUrl !== lowerCaseUrl) {
+        setImageUrl(lowerCaseUrl);
+        return;
+      }
+    }
+    setImageUrl('/Images/placeholder-product.jpg');
+  };
   
   // Parse prices from strings
   const currentPrice = parseFloat(defaultVariant?.sellingPrice || '0');
@@ -45,17 +73,18 @@ export default function ProductCard({ product, className, onClick, isAd = false 
   return (
     <div
       className={cn(
-        'group relative flex flex-col bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer md:h-[400px]',
+        'group relative flex flex-col bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer md:h-[380px]',
         className
       )}
       onClick={() => onClick?.(product)}
     >
       {/* Image Container */}
-      <div className="relative w-full aspect-[5/6] md:aspect-[4/5] lg:aspect-[3/4] bg-muted overflow-hidden">
+      <div className="relative w-full aspect-square bg-muted overflow-hidden flex items-center justify-center">
         <img
           src={imageUrl}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+          onError={handleImageError}
         />
 
         {/* AD Badge */}

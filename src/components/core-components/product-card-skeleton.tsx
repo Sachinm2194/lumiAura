@@ -14,7 +14,7 @@ export default function ProductCardSkeleton({ className }: ProductCardSkeletonPr
       )}
     >
       {/* Image Container Skeleton */}
-      <div className="relative w-full aspect-[5/6] md:aspect-[4/5] lg:aspect-[3/4] bg-muted overflow-hidden">
+      <div className="relative w-full aspect-square bg-muted overflow-hidden">
         <div className="w-full h-full bg-gradient-to-r from-muted via-muted/50 to-muted animate-pulse" />
       </div>
 
