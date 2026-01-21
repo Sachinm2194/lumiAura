@@ -7,6 +7,7 @@ import Footer from "@/components/core-components/footer";
 import IngredientsSection from "@/components/core-components/IngredientsSection";
 import { useHeaderIntersection } from "@/hooks/useHeaderIntersection";
 import { GetAllProducts } from "./api/auth/products";
+import { useWishlist } from "@/hooks/useWishlist";
 import ProductCard from "@/components/core-components/product-card";
 import ProductCardSkeleton from "@/components/core-components/product-card-skeleton";
 
@@ -15,7 +16,11 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Use the reusable wishlist hook
+  const { isWishlisted, toggleWishlist } = useWishlist();
 
+  // Fetch products
   useEffect(() => {
     const getAllProducts = async () => {
       setIsLoading(true);
@@ -54,7 +59,12 @@ export default function Home() {
               ))
             ) : (
               products.map((product: any) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  initialWishlisted={isWishlisted(product.productId)}
+                  onWishlistToggle={toggleWishlist}
+                />
               ))
             )}
           </div>

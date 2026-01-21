@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SearchBar } from "@/components/core-components/search-bar";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface Props {
   menuActive: boolean;
@@ -34,6 +35,11 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  
+  // Get wishlist count for badge
+  const { wishlistMap } = useWishlist();
+  const wishlistCount = wishlistMap.size;
+  const displayCount = wishlistCount > 9 ? "9+" : wishlistCount.toString();
 
   // Detect scroll to shrink header and add shadow
   useEffect(() => {
@@ -147,6 +153,12 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
               <Link href="/wishlist">
                 <Button variant="ghost" size="icon" className="relative transition-transform duration-300">
                   <Heart className={`transition-all duration-300 ${isScrolled ? "h-4 w-4" : "h-5 w-5"}`} />
+                  {/* Wishlist Count Badge */}
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] px-1 border-2 border-background">
+                      {displayCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Star, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Product, ProductCardProps } from '@/types/product';
+import { Button } from '../ui/button';
 
 export default function ProductCard({ 
   product, 
@@ -34,6 +35,11 @@ export default function ProductCard({
   
   const [imageUrl, setImageUrl] = useState(getImageUrl());
   const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
+  
+  // Sync with prop changes (e.g., when wishlist is updated from parent)
+  React.useEffect(() => {
+    setIsWishlisted(initialWishlisted);
+  }, [initialWishlisted]);
   
   // Handle wishlist toggle
   const handleWishlistClick = (e: React.MouseEvent) => {
@@ -104,9 +110,11 @@ export default function ProductCard({
         />
 
         {/* Wishlist Icon - Top Right */}
-        <button
+        <Button
           onClick={handleWishlistClick}
-          className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-md transition-all duration-200 hover:scale-110 z-10"
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 h-8 w-8 bg-white/90 hover:bg-white rounded-full shadow-md transition-all duration-200 hover:scale-110 z-10 p-0"
           aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
         >
           <Heart
@@ -117,7 +125,7 @@ export default function ProductCard({
                 : 'fill-transparent text-gray-700 hover:text-red-500'
             )}
           />
-        </button>
+        </Button>
 
         {/* AD Badge - Top Left (moved to avoid conflict with wishlist) */}
         {isAd && (
