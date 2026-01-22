@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { GetWishlist } from "@/app/api/auth/wishlist";
+import { GetWishlist } from "@/app/api/wishlist";
 import WishlistCard from "@/components/core-components/wishlist-card";
 import WishlistCardSkeleton from "@/components/core-components/wishlist-card-skeleton";
 import { Product } from "@/types/product";

@@ -6,7 +6,7 @@ import { ImageCarousel } from "@/components/core-components/imageCarousel";
 import Footer from "@/components/core-components/footer";
 import IngredientsSection from "@/components/core-components/IngredientsSection";
 import { useHeaderIntersection } from "@/hooks/useHeaderIntersection";
-import { GetAllProducts } from "./api/auth/products";
+import { GetAllProducts } from "./api/products";
 import { useWishlistContext } from "@/contexts/WishlistContext";
 import ProductCard from "@/components/core-components/product-card";
 import ProductCardSkeleton from "@/components/core-components/product-card-skeleton";

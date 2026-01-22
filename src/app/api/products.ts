@@ -10,3 +10,14 @@ export async function GetAllProducts() {
     handleApiError(error);
   }
 }
+
+export async function GetProductBySlug(slug: string) {
+  try {
+    // Backend supports smart routing - just pass the slug directly
+    const response = await axiosInstance.get(`/products/${slug}`);
+    return response.data || response;
+  } catch (error) {
+    handleApiError(error);
+    throw error;
+  }
+}

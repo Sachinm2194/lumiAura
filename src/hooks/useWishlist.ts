@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { GetWishlist, AddToWishlist, RemoveFromWishlist } from "@/app/api/auth/wishlist";
+import { GetWishlist, AddToWishlist, RemoveFromWishlist } from "@/app/api/wishlist";
 import { Product } from "@/types/product";
 import { toast } from "react-toastify";
 
