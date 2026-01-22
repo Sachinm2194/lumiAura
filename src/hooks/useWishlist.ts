@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { GetWishlist, AddToWishlist, RemoveFromWishlist } from "@/app/api/auth/wishlist";
 import { Product } from "@/types/product";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 
 /**
  * Custom hook for managing wishlist functionality

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Eye, EyeOff } from "lucide-react"
 import { handleApiError } from "@/lib/helpers/handleApiError"
 import { signUp } from "@/app/api/auth/signup"
-import { toast } from "sonner"
+import { toast } from "react-toastify"
 
 // Validation functions
 const validateFirstName = (firstName: string): string => {
@@ -286,9 +286,8 @@ export default function SignUpForm() {
         const successMessage = response.message || "User registered successfully. Please check your email to verify your account."
         const userEmail = response.user?.email || formData.email
         
-        toast.success(successMessage, {
-          description: `Verification email sent to ${userEmail}`,
-          duration: 5000,
+        toast.success(`${successMessage}\nVerification email sent to ${userEmail}`, {
+          autoClose: 5000,
         })
         
         setIsLoading(false)

@@ -160,6 +160,67 @@
   .dark * {
     scrollbar-color: #F8981D transparent;
   }
+
+  /* React Toastify - Close button top-right on hover, Progress bar */
+  .Toastify__toast {
+    position: relative !important;
+    min-height: 64px !important;
+  }
+
+  /* Close button - top-right, visible on hover */
+  .Toastify__close-button {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    opacity: 0 !important;
+    transition: opacity 0.2s ease-in-out !important;
+    z-index: 10 !important;
+    width: 20px !important;
+    height: 20px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: inherit !important;
+  }
+
+  .Toastify__toast:hover .Toastify__close-button {
+    opacity: 1 !important;
+  }
+
+  .Toastify__close-button:hover {
+    opacity: 1 !important;
+  }
+
+  /* Progress bar at bottom */
+  .Toastify__progress-bar {
+    height: 2px !important;
+    bottom: 0 !important;
+    top: auto !important;
+  }
+
+  /* Success toast progress bar - green */
+  .Toastify__toast--success .Toastify__progress-bar {
+    background: #22c55e !important;
+  }
+
+  /* Error toast progress bar - red */
+  .Toastify__toast--error .Toastify__progress-bar {
+    background: #ef4444 !important;
+  }
+
+  /* Warning toast progress bar - yellow */
+  .Toastify__toast--warning .Toastify__progress-bar {
+    background: #f59e0b !important;
+  }
+
+  /* Info toast progress bar - blue */
+  .Toastify__toast--info .Toastify__progress-bar {
+    background: #3b82f6 !important;
+  }
 }
 
 /* Utility class for specific elements that need scrollbar styling */

@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 
 // Store shown error messages to prevent duplicates
 const shownErrors = new Set<string>();
@@ -6,7 +6,13 @@ const shownErrors = new Set<string>();
 function showToastOnce(message: string, type: 'error' | 'warning' | 'info' = 'error') {
   if (shownErrors.has(message)) return;
   shownErrors.add(message);
-  toast[type](message);
+  if (type === 'error') {
+    toast.error(message);
+  } else if (type === 'warning') {
+    toast.warn(message);
+  } else {
+    toast.info(message);
+  }
   setTimeout(() => shownErrors.delete(message), 3000); // Clear after 3 sec
 }
 
