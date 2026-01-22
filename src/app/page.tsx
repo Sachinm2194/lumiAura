@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PrimaryHeader } from "@/components/core-components/primary-header";
 import { ImageCarousel } from "@/components/core-components/imageCarousel";
 import Footer from "@/components/core-components/footer";
@@ -12,6 +13,7 @@ import ProductCard from "@/components/core-components/product-card";
 import ProductCardSkeleton from "@/components/core-components/product-card-skeleton";
 
 export default function Home() {
+  const router = useRouter();
   const [headerRef, outOfView] = useHeaderIntersection();
   const [menuOpen, setMenuOpen] = useState(false);
   const [products, setProducts] = useState([]);
@@ -64,6 +66,9 @@ export default function Home() {
                   product={product}
                   initialWishlisted={isWishlisted(product.productId)}
                   onWishlistToggle={toggleWishlist}
+                  onClick={(product) => {
+                    router.push(`/${product.slug}`);
+                  }}
                 />
               ))
             )}

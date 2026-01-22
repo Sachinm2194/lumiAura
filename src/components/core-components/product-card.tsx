@@ -13,12 +13,12 @@ export default function ProductCard({
   initialWishlisted = false
 }: ProductCardProps) {
   // Get default variant (or first variant if no default)
-  const defaultVariant = product.variants.find(v => v.isDefault) || product.variants[0];
+  const defaultVariant = product.variants?.find(v => v.isDefault) || product.variants?.[0];
   
   // Get image URL - prioritize backend images, fallback to slug-based local image
   const getImageUrl = () => {
     // First, check if backend provides images
-    const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+    const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
     if (primaryImage?.url) {
       return primaryImage.url;
     }
@@ -61,9 +61,9 @@ export default function ProductCard({
     setImageUrl('/Images/placeholder-product.jpg');
   };
   
-  // Parse prices from strings
-  const currentPrice = parseFloat(defaultVariant?.sellingPrice || '0');
-  const originalPrice = parseFloat(defaultVariant?.mrp || '0');
+  // Parse prices from strings (with fallback if no variant)
+  const currentPrice = defaultVariant ? parseFloat(defaultVariant.sellingPrice || '0') : 0;
+  const originalPrice = defaultVariant ? parseFloat(defaultVariant.mrp || '0') : 0;
   
   // Parse rating
   const rating = parseFloat(product.averageRating || '0');
