@@ -26,7 +26,7 @@ export default function Breadcrumbs({
   const router = useRouter();
 
   return (
-    <div className={`max-w-7xl mx-auto px-4 md:px-8 py-4 ${className}`}>
+    <div className={`max-w-7xl mx-auto px-4 md:px-8 py-1 ${className}`}>
       <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
         {showBackButton && (
           <>

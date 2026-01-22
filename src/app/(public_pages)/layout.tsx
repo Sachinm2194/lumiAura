@@ -20,7 +20,7 @@ export default function PublicPagesLayout({
         onMenuToggle={() => setMenuOpen((v) => !v)}
       />
       <div ref={headerRef} />
-      <main className="pt-16 w-full px-2 py-2">
+      <main className="pt-14 w-full">
         {children}
       </main>
       <Footer />

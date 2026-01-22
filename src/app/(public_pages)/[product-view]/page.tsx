@@ -4,17 +4,15 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { GetProductBySlug } from "@/app/api/products";
 import { Product, ProductVariant } from "@/types/product";
-import { PrimaryHeader } from "@/components/core-components/primary-header";
-import Footer from "@/components/core-components/footer";
 import { useWishlistContext } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Heart, 
-  Star, 
-  ShoppingCart, 
-  Share2, 
+import {
+  Heart,
+  Star,
+  ShoppingCart,
+  Share2,
   Check,
   Minus,
   Plus,
@@ -33,7 +31,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params?.["product-view"] as string;
-  
+
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -49,28 +47,28 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!slug) return;
-      
+
       setIsLoading(true);
       try {
         const data = await GetProductBySlug(slug);
         setProduct(data);
-        
+
         // Set default variant
         const defaultVariant = data.variants?.find((v: ProductVariant) => v.isDefault) || data.variants?.[0];
         setSelectedVariant(defaultVariant || null);
-        
+
         // Reset quantity when product loads
         setQuantity(1);
-        
+
         // Fetch related products
         const allProducts = await GetAllProducts();
-        const related = Array.isArray(allProducts) 
+        const related = Array.isArray(allProducts)
           ? allProducts
-              .filter((p: Product) => 
-                p.id !== data.id && 
-                p.categoryId === data.categoryId
-              )
-              .slice(0, 4)
+            .filter((p: Product) =>
+              p.id !== data.id &&
+              p.categoryId === data.categoryId
+            )
+            .slice(0, 4)
           : [];
         setRelatedProducts(related);
       } catch (error) {
@@ -88,17 +86,17 @@ export default function ProductDetailPage() {
   // Get product images
   const getProductImages = () => {
     if (!product) return [];
-    
+
     const images = product.images || [];
     if (images.length > 0) {
       return images.map(img => img.url);
     }
-    
+
     // Fallback to slug-based image
     if (product.slug) {
       return [`/Images/${product.slug}.PNG`];
     }
-    
+
     return ["/Images/placeholder-product.jpg"];
   };
 
@@ -121,12 +119,12 @@ export default function ProductDetailPage() {
       toast.error("Please select a variant");
       return;
     }
-    
+
     if (selectedVariant.quantity === 0) {
       toast.error("This variant is out of stock");
       return;
     }
-    
+
     // TODO: Implement add to cart API
     // Payload should include: productId, variantId, quantity
     const cartItem = {
@@ -135,7 +133,7 @@ export default function ProductDetailPage() {
       quantity: quantity,
       variant: selectedVariant
     };
-    
+
     console.log("Add to cart:", cartItem);
     toast.success(`${product.name} (${selectedVariant.variantName}) x${quantity} added to cart`);
   };
@@ -161,39 +159,31 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <>
-        <PrimaryHeader menuActive={false} onMenuToggle={() => {}} />
-        <div className="min-h-screen ">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Image skeleton */}
-              <div className="aspect-square bg-muted animate-pulse rounded-lg" />
-              {/* Info skeleton */}
-              <div className="space-y-4">
-                <div className="h-8 bg-muted animate-pulse rounded w-3/4" />
-                <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
-                <div className="h-12 bg-muted animate-pulse rounded" />
-              </div>
+      <div className="min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3 md:py-5 lg:py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
+            {/* Image skeleton */}
+            <div className="aspect-square bg-muted animate-pulse rounded-lg" />
+            {/* Info skeleton */}
+            <div className="space-y-4">
+              <div className="h-8 bg-muted animate-pulse rounded w-3/4" />
+              <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
+              <div className="h-12 bg-muted animate-pulse rounded" />
             </div>
           </div>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
   if (!product) {
     return (
-      <>
-        <PrimaryHeader menuActive={false} onMenuToggle={() => {}} />
-        <div className="min-h-screen  flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-            <Button onClick={() => router.push("/")}>Go to Home</Button>
-          </div>
+      <div className="min-h-screen  flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+          <Button onClick={() => router.push("/")}>Go to Home</Button>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
@@ -202,29 +192,28 @@ export default function ProductDetailPage() {
   const reviewCount = product.reviewCount || 0;
 
   return (
-    <>
-      <PrimaryHeader menuActive={false} onMenuToggle={() => {}} />
-      
-      <div className="min-h-screen  bg-background">
-        {/* Breadcrumbs - Hidden on mobile */}
+    <div className="min-h-screen bg-background">
+      {/* Breadcrumbs - Hidden on mobile */}
+      <div className="max-w-7xl mx-auto  pt-3 md:pt-4">
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
-            ...(product.category 
+            ...(product.category
               ? [{ label: product.category.name, href: `/category/${product.category.slug}` }]
               : []),
             { label: product.name }
           ]}
           showBackButton={true}
         />
+      </div>
 
-        {/* Main Product Section */}
-        <div className="max-w-7xl mx-auto px-3 md:px-8 ">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 lg:gap-12">
+      {/* Main Product Section */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-0 md:py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
             {/* Image Gallery */}
-            <div className="space-y-3 md:space-y-4">
+            <div className="space-y-2 md:space-y-">
               {/* Main Image */}
-              <div 
+              <div
                 className="relative aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer md:cursor-zoom-in group touch-none md:touch-auto"
                 onClick={() => setIsImageZoomed(!isImageZoomed)}
               >
@@ -238,7 +227,7 @@ export default function ProductDetailPage() {
                     (e.target as HTMLImageElement).src = "/Images/placeholder-product.jpg";
                   }}
                 />
-                
+
                 {/* Badges */}
                 <div className="absolute top-2 left-2 md:top-4 md:left-4 flex flex-col gap-1.5 md:gap-2 z-10">
                   {product.isNew && (
@@ -263,11 +252,10 @@ export default function ProductDetailPage() {
                   }}
                 >
                   <Heart
-                    className={`h-4 w-4 md:h-5 md:w-5 transition-all ${
-                      isWishlistedProduct
-                        ? "fill-red-500 text-red-500"
-                        : "fill-transparent text-gray-700"
-                    }`}
+                    className={`h-4 w-4 md:h-5 md:w-5 transition-all ${isWishlistedProduct
+                      ? "fill-red-500 text-red-500"
+                      : "fill-transparent text-gray-700"
+                      }`}
                   />
                 </Button>
               </div>
@@ -279,11 +267,10 @@ export default function ProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all active:scale-95 ${
-                        selectedImageIndex === index
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-transparent hover:border-muted-foreground/50 active:border-primary/50"
-                      }`}
+                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all active:scale-95 ${selectedImageIndex === index
+                        ? "border-primary ring-2 ring-primary/20"
+                        : "border-transparent hover:border-muted-foreground/50 active:border-primary/50"
+                        }`}
                     >
                       <Image
                         src={img}
@@ -301,32 +288,21 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Product Info */}
-            <div className=" space-y-2 md:space-y-4 px-1 md:px-0">
-              {/* Brand/Category */}
-              {product.category && (
-                <div className="text-xs md:text-sm text-muted-foreground">
-                  {product.category.name}
-                </div>
-              )}
-
+            <div className="space-y-3 md:space-y-4">
               {/* Product Name */}
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-                {product.name}
-              </h1>
-
-              {/* Rating */}
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 md:h-5 md:w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold text-sm md:text-base">{rating.toFixed(1)}</span>
-                </div>
-                <span className="text-xs md:text-sm text-muted-foreground">
-                  ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
-                </span>
+              <div>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-1 md:mb-2">
+                  {product.name}
+                </h1>
+                {product.category && (
+                  <div className="text-xs md:text-sm text-muted-foreground">
+                    {product.category.name}
+                  </div>
+                )}
               </div>
 
               {/* Price Section */}
-              <div className="space-y-1 md:space-y-2 py-2 md:py-0">
+              <div className="space-y-1">
                 {selectedVariant ? (
                   <>
                     <div className="flex flex-wrap items-baseline gap-2 md:gap-3">
@@ -344,7 +320,7 @@ export default function ProductDetailPage() {
                         </>
                       )}
                     </div>
-                    <p className="text-xs md:text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Inclusive of all taxes
                     </p>
                   </>
@@ -362,14 +338,14 @@ export default function ProductDetailPage() {
 
               {/* Short Description */}
               {product.shortDescription && (
-                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed pt-1">
                   {product.shortDescription}
                 </p>
               )}
 
               {/* Variant Selector */}
               {product.variants && product.variants.length > 0 && (
-                <div className="space-y-2 md:space-y-3">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-sm md:text-base font-semibold">
                       {product.variants.length > 1 ? "Select Size:" : "Size:"}
@@ -390,11 +366,10 @@ export default function ProductDetailPage() {
                             setSelectedVariant(variant);
                             setQuantity(1); // Reset quantity when variant changes
                           }}
-                          className={`min-w-[90px] md:min-w-[100px] h-10 md:h-11 text-sm md:text-base relative active:scale-95 ${
-                            selectedVariant?.id === variant.id
-                              ? "border-primary border-2 ring-2 ring-primary/20 bg-primary/5"
-                              : ""
-                          }`}
+                          className={`min-w-[90px] md:min-w-[100px] h-10 md:h-11 text-sm md:text-base relative active:scale-95 ${selectedVariant?.id === variant.id
+                            ? "border-primary border-2 ring-2 ring-primary/20 bg-primary/5"
+                            : ""
+                            }`}
                           disabled={variant.quantity === 0}
                         >
                           {variant.variantName}
@@ -423,7 +398,7 @@ export default function ProductDetailPage() {
               )}
 
               {/* Quantity Selector */}
-              <div className="space-y-2 md:space-y-3">
+              <div className="space-y-2">
                 <label className="text-sm md:text-base font-semibold">Quantity:</label>
                 <div className="flex items-center gap-3 md:gap-4">
                   <div className="flex items-center border-2 rounded-lg overflow-hidden">
@@ -451,7 +426,7 @@ export default function ProductDetailPage() {
                   </div>
                   {selectedVariant && (
                     <span className="text-xs md:text-sm text-muted-foreground">
-                      {selectedVariant.quantity > 0 
+                      {selectedVariant.quantity > 0
                         ? `${selectedVariant.quantity} available`
                         : "Out of stock"
                       }
@@ -461,7 +436,7 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-row gap-3 pt-2 md:pt-0">
+              <div className="flex flex-row gap-3">
                 <Button
                   size="lg"
                   className="flex-1 gap-2 h-12 md:h-11 text-base md:text-sm font-semibold active:scale-95"
@@ -486,7 +461,7 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-2 md:gap-4 pt-3 md:pt-4 border-t">
+              <div className="grid grid-cols-3 gap-2 md:gap-3 pt-3 md:pt-4 border-t">
                 <div className="flex flex-col items-center text-center">
                   <Package className="h-5 w-5 md:h-6 md:w-6 text-primary mb-1 md:mb-2" />
                   <span className="text-[10px] md:text-xs font-semibold leading-tight">Free Shipping</span>
@@ -504,7 +479,7 @@ export default function ProductDetailPage() {
               {/* Share Button */}
               <Button
                 variant="outline"
-                className="w-full gap-2 h-11 md:h-10 text-sm md:text-sm active:scale-95"
+                className="w-full gap-2 h-11 md:h-10 text-sm active:scale-95"
                 onClick={() => {
                   if (navigator.share) {
                     navigator.share({
@@ -525,9 +500,9 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Details Tabs */}
-          <div className="mt-8 md:mt-12 space-y-4 md:space-y-6">
+          <div className="mt-6 md:mt-8 space-y-3 md:space-y-4">
             {/* Tab Navigation */}
-            <div className="border-b overflow-x-auto -mx-3 md:mx-0 px-3 md:px-0">
+            <div className="border-b overflow-x-auto -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
               <div className="flex gap-2 md:gap-4 min-w-max md:min-w-0">
                 {[
                   { id: "description", label: "Description" },
@@ -538,11 +513,10 @@ export default function ProductDetailPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`pb-2 md:pb-3 px-3 md:px-2 border-b-2 transition-colors font-semibold text-sm md:text-base whitespace-nowrap active:scale-95 ${
-                      activeTab === tab.id
-                        ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground active:text-foreground"
-                    }`}
+                    className={`pb-2 md:pb-3 px-3 md:px-2 border-b-2 transition-colors font-semibold text-sm md:text-base whitespace-nowrap active:scale-95 ${activeTab === tab.id
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground active:text-foreground"
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -551,7 +525,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="min-h-[150px] md:min-h-[200px]">
+            <div className="min-h-[100px] md:min-h-[150px]">
               {activeTab === "description" && (
                 <div className="prose max-w-none">
                   {product.description ? (
@@ -614,8 +588,8 @@ export default function ProductDetailPage() {
 
           {/* Warnings */}
           {product.warnings && (
-            <Card className="mt-6 md:mt-8 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-              <CardContent className="pt-4 md:pt-6 px-4 md:px-6 pb-4 md:pb-6">
+            <Card className="mt-4 md:mt-6 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+              <CardContent className="pt-3 md:pt-4 px-3 md:px-4 pb-3 md:pb-4">
                 <div className="flex gap-2 md:gap-3">
                   <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
@@ -633,8 +607,8 @@ export default function ProductDetailPage() {
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <div className="mt-10 md:mt-16">
-              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 px-1 md:px-0">You May Also Like</h2>
+            <div className="mt-6 md:mt-8 lg:mt-10">
+              <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">You May Also Like</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                 {relatedProducts.map((relatedProduct) => (
                   <ProductCard
@@ -652,8 +626,5 @@ export default function ProductDetailPage() {
           )}
         </div>
       </div>
-
-      {/* <Footer /> */}
-    </>
   );
 }
