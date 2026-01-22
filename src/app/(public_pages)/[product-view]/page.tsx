@@ -14,7 +14,6 @@ import {
   Heart, 
   Star, 
   ShoppingCart, 
-  ChevronLeft, 
   Share2, 
   Check,
   Minus,
@@ -23,13 +22,12 @@ import {
   Package,
   Truck,
   Shield,
-  ArrowLeft
 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import ProductCard from "@/components/core-components/product-card";
 import { GetAllProducts } from "@/app/api/products";
-import Link from "next/link";
+import Breadcrumbs from "@/components/core-components/breadcrumbs";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -208,46 +206,26 @@ export default function ProductDetailPage() {
       <PrimaryHeader menuActive={false} onMenuToggle={() => {}} />
       
       <div className="min-h-screen  bg-background">
-        {/* Breadcrumbs */}
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            <span>/</span>
-            <Link href="/" className="hover:text-foreground transition-colors">
-              Home
-            </Link>
-            {product.category && (
-              <>
-                <span>/</span>
-                <Link 
-                  href={`/category/${product.category.slug}`}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {product.category.name}
-                </Link>
-              </>
-            )}
-            <span>/</span>
-            <span className="text-foreground">{product.name}</span>
-          </div>
-        </div>
+        {/* Breadcrumbs - Hidden on mobile */}
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            ...(product.category 
+              ? [{ label: product.category.name, href: `/category/${product.category.slug}` }]
+              : []),
+            { label: product.name }
+          ]}
+          showBackButton={true}
+        />
 
         {/* Main Product Section */}
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div className="max-w-7xl mx-auto px-3 md:px-8 ">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 lg:gap-12">
             {/* Image Gallery */}
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {/* Main Image */}
               <div 
-                className="relative aspect-square bg-muted rounded-lg overflow-hidden cursor-zoom-in group"
+                className="relative aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer md:cursor-zoom-in group touch-none md:touch-auto"
                 onClick={() => setIsImageZoomed(!isImageZoomed)}
               >
                 <Image
@@ -262,15 +240,15 @@ export default function ProductDetailPage() {
                 />
                 
                 {/* Badges */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                <div className="absolute top-2 left-2 md:top-4 md:left-4 flex flex-col gap-1.5 md:gap-2 z-10">
                   {product.isNew && (
-                    <Badge className="bg-green-500 text-white">New</Badge>
+                    <Badge className="bg-green-500 text-white text-xs md:text-sm px-2 py-0.5">New</Badge>
                   )}
                   {product.isFeatured && (
-                    <Badge className="bg-blue-500 text-white">Featured</Badge>
+                    <Badge className="bg-blue-500 text-white text-xs md:text-sm px-2 py-0.5">Featured</Badge>
                   )}
                   {discount > 0 && (
-                    <Badge className="bg-red-500 text-white">{discount}% OFF</Badge>
+                    <Badge className="bg-red-500 text-white text-xs md:text-sm px-2 py-0.5">{discount}% OFF</Badge>
                   )}
                 </div>
 
@@ -278,14 +256,14 @@ export default function ProductDetailPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full shadow-md"
+                  className="absolute top-2 right-2 md:top-4 md:right-4 bg-white/90 hover:bg-white rounded-full shadow-md h-9 w-9 md:h-10 md:w-10 z-10"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleWishlistToggle();
                   }}
                 >
                   <Heart
-                    className={`h-5 w-5 transition-all ${
+                    className={`h-4 w-4 md:h-5 md:w-5 transition-all ${
                       isWishlistedProduct
                         ? "fill-red-500 text-red-500"
                         : "fill-transparent text-gray-700"
@@ -296,15 +274,15 @@ export default function ProductDetailPage() {
 
               {/* Thumbnail Gallery */}
               {images.length > 1 && (
-                <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-5 md:grid-cols-5 gap-2 md:gap-2">
                   {images.map((img, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all active:scale-95 ${
                         selectedImageIndex === index
-                          ? "border-primary"
-                          : "border-transparent hover:border-muted-foreground/50"
+                          ? "border-primary ring-2 ring-primary/20"
+                          : "border-transparent hover:border-muted-foreground/50 active:border-primary/50"
                       }`}
                     >
                       <Image
@@ -323,81 +301,81 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Product Info */}
-            <div className="space-y-6">
+            <div className=" space-y-2 md:space-y-4 px-1 md:px-0">
               {/* Brand/Category */}
               {product.category && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs md:text-sm text-muted-foreground">
                   {product.category.name}
                 </div>
               )}
 
               {/* Product Name */}
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
                 {product.name}
               </h1>
 
               {/* Rating */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 <div className="flex items-center gap-1">
-                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">{rating.toFixed(1)}</span>
+                  <Star className="h-4 w-4 md:h-5 md:w-5 fill-yellow-400 text-yellow-400" />
+                  <span className="font-semibold text-sm md:text-base">{rating.toFixed(1)}</span>
                 </div>
-                <span className="text-muted-foreground">
+                <span className="text-xs md:text-sm text-muted-foreground">
                   ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
                 </span>
               </div>
 
               {/* Price Section */}
-              <div className="space-y-2">
+              <div className="space-y-1 md:space-y-2 py-2 md:py-0">
                 {selectedVariant ? (
                   <>
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-bold text-foreground">
+                    <div className="flex flex-wrap items-baseline gap-2 md:gap-3">
+                      <span className="text-2xl md:text-3xl font-bold text-foreground">
                         {formatPrice(selectedVariant.sellingPrice)}
                       </span>
                       {parseFloat(selectedVariant.mrp) > parseFloat(selectedVariant.sellingPrice) && (
                         <>
-                          <span className="text-xl text-muted-foreground line-through">
+                          <span className="text-lg md:text-xl text-muted-foreground line-through">
                             {formatPrice(selectedVariant.mrp)}
                           </span>
-                          <Badge variant="destructive" className="text-sm">
+                          <Badge variant="destructive" className="text-xs md:text-sm">
                             {discount}% OFF
                           </Badge>
                         </>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs md:text-sm text-muted-foreground">
                       Inclusive of all taxes
                     </p>
                   </>
                 ) : product.variants && product.variants.length === 0 ? (
                   <div className="text-muted-foreground">
-                    <p className="text-lg">Price not available</p>
-                    <p className="text-sm">No variants available for this product</p>
+                    <p className="text-base md:text-lg">Price not available</p>
+                    <p className="text-xs md:text-sm">No variants available for this product</p>
                   </div>
                 ) : (
                   <div className="text-muted-foreground">
-                    <p className="text-lg">Loading price...</p>
+                    <p className="text-base md:text-lg">Loading price...</p>
                   </div>
                 )}
               </div>
 
               {/* Short Description */}
               {product.shortDescription && (
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                   {product.shortDescription}
                 </p>
               )}
 
               {/* Variant Selector */}
               {product.variants && product.variants.length > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-semibold">
+                    <label className="text-sm md:text-base font-semibold">
                       {product.variants.length > 1 ? "Select Size:" : "Size:"}
                     </label>
                     {selectedVariant && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
                         SKU: {selectedVariant.sku}
                       </span>
                     )}
@@ -407,28 +385,32 @@ export default function ProductDetailPage() {
                       {product.variants.map((variant) => (
                         <Button
                           key={variant.id}
-                          variant={selectedVariant?.id === variant.id ? "default" : "outline"}
+                          variant="outline"
                           onClick={() => {
                             setSelectedVariant(variant);
                             setQuantity(1); // Reset quantity when variant changes
                           }}
-                          className="min-w-[100px] relative"
+                          className={`min-w-[90px] md:min-w-[100px] h-10 md:h-11 text-sm md:text-base relative active:scale-95 ${
+                            selectedVariant?.id === variant.id
+                              ? "border-primary border-2 ring-2 ring-primary/20 bg-primary/5"
+                              : ""
+                          }`}
                           disabled={variant.quantity === 0}
                         >
                           {variant.variantName}
                           {variant.isDefault && (
-                            <span className="ml-1 text-xs opacity-70">(Default)</span>
+                            <span className="ml-1 text-xs opacity-70 hidden sm:inline">(Default)</span>
                           )}
                           {variant.quantity === 0 && (
-                            <span className="ml-2 text-xs opacity-70">(Out of Stock)</span>
+                            <span className="ml-1 text-xs opacity-70">(Out)</span>
                           )}
                         </Button>
                       ))}
                     </div>
                   ) : (
                     // Single variant - show as read-only
-                    <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
-                      <span className="font-medium">{product.variants[0].variantName}</span>
+                    <div className="flex items-center gap-2 p-2.5 md:p-3 border rounded-md bg-muted/50">
+                      <span className="font-medium text-sm md:text-base">{product.variants[0].variantName}</span>
                       {product.variants[0].isDefault && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
@@ -441,19 +423,20 @@ export default function ProductDetailPage() {
               )}
 
               {/* Quantity Selector */}
-              <div className="space-y-3">
-                <label className="text-sm font-semibold">Quantity:</label>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border rounded-md">
+              <div className="space-y-2 md:space-y-3">
+                <label className="text-sm md:text-base font-semibold">Quantity:</label>
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="flex items-center border-2 rounded-lg overflow-hidden">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleQuantityChange(-1)}
                       disabled={quantity <= 1}
+                      className="h-10 w-10 md:h-11 md:w-11 active:bg-muted"
                     >
-                      <Minus className="h-4 w-4" />
+                      <Minus className="h-4 w-4 md:h-5 md:w-5" />
                     </Button>
-                    <span className="px-4 py-2 min-w-[60px] text-center font-semibold">
+                    <span className="px-4 md:px-6 py-2 min-w-[50px] md:min-w-[60px] text-center font-semibold text-base md:text-lg">
                       {quantity}
                     </span>
                     <Button
@@ -461,12 +444,13 @@ export default function ProductDetailPage() {
                       size="icon"
                       onClick={() => handleQuantityChange(1)}
                       disabled={quantity >= (selectedVariant?.quantity || 10)}
+                      className="h-10 w-10 md:h-11 md:w-11 active:bg-muted"
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-4 w-4 md:h-5 md:w-5" />
                     </Button>
                   </div>
                   {selectedVariant && (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs md:text-sm text-muted-foreground">
                       {selectedVariant.quantity > 0 
                         ? `${selectedVariant.quantity} available`
                         : "Out of stock"
@@ -477,10 +461,10 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-row gap-3 pt-2 md:pt-0">
                 <Button
                   size="lg"
-                  className="flex-1 gap-2"
+                  className="flex-1 gap-2 h-12 md:h-11 text-base md:text-sm font-semibold active:scale-95"
                   onClick={handleAddToCart}
                   disabled={!selectedVariant || selectedVariant.quantity === 0}
                 >
@@ -490,7 +474,7 @@ export default function ProductDetailPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="flex-1 gap-2"
+                  className="flex-1 gap-2 h-12 md:h-11 text-base md:text-sm font-semibold active:scale-95"
                   onClick={() => {
                     // TODO: Implement buy now
                     toast.info("Buy Now feature coming soon");
@@ -502,25 +486,25 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+              <div className="grid grid-cols-3 gap-2 md:gap-4 pt-3 md:pt-4 border-t">
                 <div className="flex flex-col items-center text-center">
-                  <Package className="h-6 w-6 text-primary mb-2" />
-                  <span className="text-xs font-semibold">Free Shipping</span>
+                  <Package className="h-5 w-5 md:h-6 md:w-6 text-primary mb-1 md:mb-2" />
+                  <span className="text-[10px] md:text-xs font-semibold leading-tight">Free Shipping</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                  <Shield className="h-6 w-6 text-primary mb-2" />
-                  <span className="text-xs font-semibold">Secure Payment</span>
+                  <Shield className="h-5 w-5 md:h-6 md:w-6 text-primary mb-1 md:mb-2" />
+                  <span className="text-[10px] md:text-xs font-semibold leading-tight">Secure Payment</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                  <Truck className="h-6 w-6 text-primary mb-2" />
-                  <span className="text-xs font-semibold">Easy Returns</span>
+                  <Truck className="h-5 w-5 md:h-6 md:w-6 text-primary mb-1 md:mb-2" />
+                  <span className="text-[10px] md:text-xs font-semibold leading-tight">Easy Returns</span>
                 </div>
               </div>
 
               {/* Share Button */}
               <Button
                 variant="outline"
-                className="w-full gap-2"
+                className="w-full gap-2 h-11 md:h-10 text-sm md:text-sm active:scale-95"
                 onClick={() => {
                   if (navigator.share) {
                     navigator.share({
@@ -541,10 +525,10 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Product Details Tabs */}
-          <div className="mt-12 space-y-6">
+          <div className="mt-8 md:mt-12 space-y-4 md:space-y-6">
             {/* Tab Navigation */}
-            <div className="border-b">
-              <div className="flex flex-wrap gap-4">
+            <div className="border-b overflow-x-auto -mx-3 md:mx-0 px-3 md:px-0">
+              <div className="flex gap-2 md:gap-4 min-w-max md:min-w-0">
                 {[
                   { id: "description", label: "Description" },
                   { id: "ingredients", label: "Ingredients" },
@@ -554,10 +538,10 @@ export default function ProductDetailPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`pb-3 px-2 border-b-2 transition-colors font-semibold ${
+                    className={`pb-2 md:pb-3 px-3 md:px-2 border-b-2 transition-colors font-semibold text-sm md:text-base whitespace-nowrap active:scale-95 ${
                       activeTab === tab.id
                         ? "border-primary text-primary"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
+                        : "border-transparent text-muted-foreground active:text-foreground"
                     }`}
                   >
                     {tab.label}
@@ -567,15 +551,15 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="min-h-[200px]">
+            <div className="min-h-[150px] md:min-h-[200px]">
               {activeTab === "description" && (
                 <div className="prose max-w-none">
                   {product.description ? (
-                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-line">
                       {product.description}
                     </p>
                   ) : (
-                    <p className="text-muted-foreground">No description available.</p>
+                    <p className="text-sm md:text-base text-muted-foreground">No description available.</p>
                   )}
                 </div>
               )}
@@ -583,16 +567,16 @@ export default function ProductDetailPage() {
               {activeTab === "ingredients" && (
                 <div>
                   {product.ingredients && product.ingredients.length > 0 ? (
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-2">
                       {product.ingredients.map((ingredient, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-primary" />
+                        <li key={index} className="flex items-center gap-2 text-sm md:text-base">
+                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
                           <span>{ingredient}</span>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-muted-foreground">No ingredients listed.</p>
+                    <p className="text-sm md:text-base text-muted-foreground">No ingredients listed.</p>
                   )}
                 </div>
               )}
@@ -600,16 +584,16 @@ export default function ProductDetailPage() {
               {activeTab === "benefits" && (
                 <div>
                   {product.benefits && product.benefits.length > 0 ? (
-                    <ul className="space-y-3">
+                    <ul className="space-y-2 md:space-y-3">
                       {product.benefits.map((benefit, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">{benefit}</span>
+                        <li key={index} className="flex items-start gap-2 md:gap-3">
+                          <Check className="h-4 w-4 md:h-5 md:w-5 text-primary mt-0.5 flex-shrink-0" />
+                          <span className="text-sm md:text-base text-muted-foreground">{benefit}</span>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-muted-foreground">No benefits listed.</p>
+                    <p className="text-sm md:text-base text-muted-foreground">No benefits listed.</p>
                   )}
                 </div>
               )}
@@ -617,11 +601,11 @@ export default function ProductDetailPage() {
               {activeTab === "howtouse" && (
                 <div>
                   {product.howToUse ? (
-                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-line">
                       {product.howToUse}
                     </p>
                   ) : (
-                    <p className="text-muted-foreground">No usage instructions available.</p>
+                    <p className="text-sm md:text-base text-muted-foreground">No usage instructions available.</p>
                   )}
                 </div>
               )}
@@ -630,15 +614,15 @@ export default function ProductDetailPage() {
 
           {/* Warnings */}
           {product.warnings && (
-            <Card className="mt-8 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-              <CardContent className="pt-6">
-                <div className="flex gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <Card className="mt-6 md:mt-8 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+              <CardContent className="pt-4 md:pt-6 px-4 md:px-6 pb-4 md:pb-6">
+                <div className="flex gap-2 md:gap-3">
+                  <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">
+                    <h3 className="font-semibold text-sm md:text-base text-amber-900 dark:text-amber-100 mb-1 md:mb-2">
                       Important Information
                     </h3>
-                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                    <p className="text-xs md:text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
                       {product.warnings}
                     </p>
                   </div>
@@ -649,9 +633,9 @@ export default function ProductDetailPage() {
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <div className="mt-16">
-              <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="mt-10 md:mt-16">
+              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 px-1 md:px-0">You May Also Like</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                 {relatedProducts.map((relatedProduct) => (
                   <ProductCard
                     key={relatedProduct.id}
@@ -669,7 +653,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
