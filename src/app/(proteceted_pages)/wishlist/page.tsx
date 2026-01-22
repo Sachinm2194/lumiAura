@@ -5,6 +5,7 @@ import WishlistCard from "@/components/core-components/wishlist-card";
 import WishlistCardSkeleton from "@/components/core-components/wishlist-card-skeleton";
 import { Product } from "@/types/product";
 import { useRouter } from "next/navigation";
+import { useWishlistContext } from "@/contexts/WishlistContext";
 
 // Wishlist item structure from API
 interface WishlistItem {
@@ -19,6 +20,7 @@ export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { toggleWishlist, refreshWishlist } = useWishlistContext();
 
   useEffect(() => {
     const getWishlist = async () => {
@@ -50,15 +52,28 @@ export default function WishlistPage() {
   };
 
   // Handle wishlist toggle (remove from wishlist)
-  const handleWishlistToggle = (product: Product, isWishlisted: boolean) => {
-    console.log("Wishlist toggle:", product.name, isWishlisted);
-    if (!isWishlisted) {
-      // Remove from local state using wishlist item id
-      setWishlistItems((prev) => 
-        prev.filter((item) => item.product.id !== product.id)
-      );
+  const handleWishlistToggle = async (product: Product, isWishlisted: boolean) => {
+    try {
+      // Use the context's toggleWishlist which handles API calls and updates global state
+      await toggleWishlist(product, isWishlisted);
+      
+      // Update local state to reflect the change
+      if (!isWishlisted) {
+        // Remove from local state
+        setWishlistItems((prev) => 
+          prev.filter((item) => item.product.productId !== product.productId)
+        );
+      } else {
+        // Refresh wishlist to get updated data if item was added back
+        const data = await GetWishlist();
+        const validWishlistItems = Array.isArray(data) 
+          ? data.filter((item: any) => item && item.product && item.product.id)
+          : [];
+        setWishlistItems(validWishlistItems);
+      }
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
     }
-    // TODO: Implement API call to add/remove from wishlist
   };
 
   // Handle product click (navigate to product details)

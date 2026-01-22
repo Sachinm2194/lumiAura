@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SearchBar } from "@/components/core-components/search-bar";
-import { useWishlist } from "@/hooks/useWishlist";
+import { useWishlistContext } from "@/contexts/WishlistContext";
 
 interface Props {
   menuActive: boolean;
@@ -37,7 +37,7 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
   const [isScrolled, setIsScrolled] = useState(false);
   
   // Get wishlist count for badge
-  const { wishlistMap } = useWishlist();
+  const { wishlistMap } = useWishlistContext();
   const wishlistCount = wishlistMap.size;
   const displayCount = wishlistCount > 9 ? "9+" : wishlistCount.toString();
 

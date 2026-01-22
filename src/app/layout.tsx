@@ -3,6 +3,7 @@ import { Geist, Geist_Mono,Inclusive_Sans } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import TopLoader from "@/components/core-components/top-loader";
@@ -48,20 +49,22 @@ export default function RootLayout({
         >
           <TopLoader />
           <AuthProvider>
-            <ToastContainer
-              position="top-right"
-              autoClose={4000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
-            {children}
-            <BottomNavigationFooter />
+            <WishlistProvider>
+              <ToastContainer
+                position="top-right"
+                autoClose={4000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
+              {children}
+              <BottomNavigationFooter />
+            </WishlistProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -167,7 +167,7 @@
     min-height: 64px !important;
   }
 
-  /* Close button - top-right, visible on hover */
+  /* Close button - top-right, visible on hover (desktop) */
   .Toastify__close-button {
     position: absolute !important;
     top: 8px !important;
@@ -187,12 +187,22 @@
     color: inherit !important;
   }
 
-  .Toastify__toast:hover .Toastify__close-button {
-    opacity: 1 !important;
+  /* Show close button always on mobile screens */
+  @media (max-width: 767px) {
+    .Toastify__close-button {
+      opacity: 1 !important;
+    }
   }
 
-  .Toastify__close-button:hover {
-    opacity: 1 !important;
+  /* Desktop: Show on hover */
+  @media (min-width: 768px) {
+    .Toastify__toast:hover .Toastify__close-button {
+      opacity: 1 !important;
+    }
+
+    .Toastify__close-button:hover {
+      opacity: 1 !important;
+    }
   }
 
   /* Progress bar at bottom */
