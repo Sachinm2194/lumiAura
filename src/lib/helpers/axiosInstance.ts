@@ -28,6 +28,10 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 };
 
 axiosInstance.interceptors.request.use((config) => {
+  // Log the full URL being requested for debugging
+  const fullUrl = `${config.baseURL}${config.url}${config.params ? '?' + new URLSearchParams(config.params).toString() : ''}`;
+  console.log("Axios request URL:", fullUrl);
+  
   // Remove skipAuth header if present (cleanup)
   if (config.headers?.skipAuth) {
     delete config.headers.skipAuth;

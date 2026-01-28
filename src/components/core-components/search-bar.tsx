@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, X as CloseIcon } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -39,22 +39,32 @@ export function SearchBar({
       if (e.key === "Escape" && isSearchOpen) {
         setIsSearchOpen(false);
         setSearchQuery("");
-        if (onSearch) {
-          onSearch("");
-        }
       }
     };
 
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [isSearchOpen, onSearch]);
+  }, [isSearchOpen]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
+  };
+
+  // Handle search submission (Enter key or search icon click)
+  const handleSearchSubmit = () => {
     if (onSearch) {
-      onSearch(value);
+      const query = searchQuery.trim();
+      onSearch(query);
+      console.log("Search submitted:", query);
+    }
+  };
+
+  // Handle Enter key press
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearchSubmit();
     }
   };
 
@@ -62,9 +72,6 @@ export function SearchBar({
   const handleClose = () => {
     setIsSearchOpen(false);
     setSearchQuery("");
-    if (onSearch) {
-      onSearch("");
-    }
   };
 
   // Mobile overlay view (when showMobileIcon is true and search is open on mobile)
@@ -78,30 +85,30 @@ export function SearchBar({
           className="fixed inset-0 bg-black/20 z-40 md:hidden"
           onClick={handleClose}
         />
-        {/* Search bar overlay - slides from bottom of header (h-16 = 64px when not scrolled, h-14 = 56px when scrolled) */}
+        {/* Search bar overlay - slides from bottom of header */}
         <div
           className={`fixed left-0 right-0 z-50 bg-background border-b border-border shadow-lg rounded-full md:hidden animate-in slide-in-from-top duration-300 ${
             isScrolled ? "top-14" : "top-16"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center gap-2 px-4 py-3 ">
-            <Search className="text-muted-foreground shrink-0 h-5 w-5" />
+          <div className="flex items-center gap-2 px-4 py-3">
             <Input
               ref={searchInputRef}
               type="text"
               placeholder={placeholder}
               value={searchQuery}
               onChange={handleSearchChange}
-              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 px-0 text-base bg-transparent flex-1 min-w-0 shadow-none"
+              onKeyDown={handleKeyDown}
+              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-10 px-3 text-base bg-transparent flex-1 min-w-0 shadow-none"
             />
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleClose}
+              onClick={handleSearchSubmit}
               className="h-8 w-8 shrink-0"
             >
-              <CloseIcon className="h-5 w-5" />
+              <Search className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -117,24 +124,22 @@ export function SearchBar({
       <div
         className={`hidden md:flex items-center gap-2 bg-background border border-border/50 rounded-full px-3 py-1.5 shadow-xs w-full ${maxWidth} transition-all duration-300 ${className}`}
       >
-        <Search
-          className={`text-muted-foreground shrink-0 ${isScrolled ? "h-4 w-4" : "h-4 w-4"}`}
-        />
         <Input
           ref={searchInputRef}
           type="text"
           placeholder={placeholder}
           value={searchQuery}
           onChange={handleSearchChange}
-          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-8 px-0 text-sm bg-transparent flex-1 min-w-0 shadow-none"
+          onKeyDown={handleKeyDown}
+          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-8 px-2 text-sm bg-transparent flex-1 min-w-0 shadow-none"
         />
         <Button
           variant="ghost"
           size="icon"
-          onClick={handleClose}
+          onClick={handleSearchSubmit}
           className="h-6 w-6 shrink-0"
         >
-          <CloseIcon className="h-4 w-4" />
+          <Search className="h-4 w-4" />
         </Button>
       </div>
     );

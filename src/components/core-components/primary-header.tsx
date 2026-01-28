@@ -28,9 +28,10 @@ import { useWishlistContext } from "@/contexts/WishlistContext";
 interface Props {
   menuActive: boolean;
   onMenuToggle: () => void;
+  onSearch?: (query: string) => void;
 }
 
-export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
+export function PrimaryHeader({ menuActive, onMenuToggle, onSearch }: Props) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false);
@@ -72,6 +73,15 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
     await logout();
     // Redirect to home page after logout (home is public)
     router.push("/");
+  };
+
+  // Handle search from SearchBar component
+  const handleSearch = (query: string) => {
+    console.log("Search query from header:", query);
+    // Call the parent's search handler if provided
+    if (onSearch) {
+      onSearch(query);
+    }
   };
 
   // Get user initials for avatar
@@ -146,7 +156,11 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
             <div className="flex items-center gap-2 ">
               {/* Search Button/Field - Icon on all screens, inline on md+, overlay on mobile */}
               <div className="md:block">
-                <SearchBar isScrolled={isScrolled} showMobileIcon={true} />
+                <SearchBar 
+                  isScrolled={isScrolled} 
+                  showMobileIcon={true} 
+                  onSearch={handleSearch}
+                />
               </div>
 
               {/* Wishlist Button */}
@@ -240,7 +254,11 @@ export function PrimaryHeader({ menuActive, onMenuToggle }: Props) {
             <div className="flex items-center gap-2  ">
               {/* Search Button/Field - Icon on all screens, inline on md+, overlay on mobile */}
               <div className="md:block">
-                <SearchBar isScrolled={isScrolled} showMobileIcon={true} />
+                <SearchBar 
+                  isScrolled={isScrolled} 
+                  showMobileIcon={true} 
+                  onSearch={handleSearch}
+                />
               </div>
 
               <Link href="/sign-up" className="hidden md:block">
