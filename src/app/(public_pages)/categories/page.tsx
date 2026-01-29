@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getAllCategories } from "@/app/api/category";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
+import { useSearchContext } from "../layout";
 
 interface Category {
   id: number;
@@ -20,28 +21,46 @@ interface Category {
 
 export default function CategoriesPage() {
   const router = useRouter();
+  const { setSearchHandler } = useSearchContext();
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getAllCategories();
-        // Filter only active categories
-        const activeCategories = Array.isArray(data)
-          ? data.filter((cat: Category) => cat.status === "active")
-          : [];
-        setCategories(activeCategories);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // 🔹 Fetch categories with optional search
+  const fetchCategories = useCallback(async (search?: string) => {
+    setIsLoading(true);
+    try {
+      const data = await getAllCategories(search);
 
-    fetchCategories();
+      const activeCategories = Array.isArray(data)
+        ? data.filter((cat: Category) => cat.status === "active")
+        : [];
+
+      setCategories(activeCategories);
+    } catch {
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  // 🔹 Initial fetch
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  // 🔹 Handle search from header (submit/enter or icon click)
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    fetchCategories(query || undefined);
+  };
+
+  // 🔹 Register search handler with header
+  useEffect(() => {
+    setSearchHandler(handleSearch);
+    return () => setSearchHandler(() => {});
+  }, [setSearchHandler]);
 
   const handleCategoryClick = (slug: string) => {
     router.push(`/category/${slug}`);
@@ -51,7 +70,9 @@ export default function CategoriesPage() {
     return (
       <div className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Categories</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">
+            Categories
+          </h1>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {Array.from({ length: 8 }).map((_, index) => (
               <Card key={index} className="overflow-hidden">
@@ -72,12 +93,21 @@ export default function CategoriesPage() {
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6">
         {/* Page Header */}
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">All Categories</h1>
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            All Categories
+          </h1>
           <p className="text-sm md:text-base text-muted-foreground mt-1">
             Explore our wide range of beauty products
           </p>
         </div>
+
+        {/* Search Result Info */}
+        {searchQuery && !isLoading && (
+          <p className="text-sm text-muted-foreground mb-6">
+            Found {categories.length} categor{categories.length !== 1 ? 'ies' : 'y'}
+          </p>
+        )}
 
         {/* Categories Grid */}
         {categories.length > 0 ? (
@@ -90,7 +120,6 @@ export default function CategoriesPage() {
               >
                 {/* Category Image/Icon */}
                 <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/10 via-primary/5 to-muted overflow-hidden group-hover:from-primary/20 group-hover:via-primary/10 transition-all duration-300">
-                  {/* Category initial letter as visual element */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-4xl md:text-5xl font-bold text-primary/30 group-hover:text-primary/40 transition-colors select-none">
                       {category.name.charAt(0).toUpperCase()}
@@ -120,7 +149,9 @@ export default function CategoriesPage() {
         ) : (
           <div className="text-center py-12 md:py-16">
             <p className="text-muted-foreground text-base md:text-lg">
-              No categories available at the moment.
+              {searchQuery
+                ? `No categories found for "${searchQuery}".`
+                : "No categories available at the moment."}
             </p>
           </div>
         )}
