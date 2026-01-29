@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getAllCategories } from "@/app/api/category";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
-import { useSearchContext } from "../layout";
+import { useSearchContext } from "@/contexts/SearchContext";
 
 interface Category {
   id: number;

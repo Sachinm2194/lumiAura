@@ -6,7 +6,7 @@ import WishlistCard from "@/components/core-components/wishlist-card";
 import WishlistCardSkeleton from "@/components/core-components/wishlist-card-skeleton";
 import { Product } from "@/types/product";
 import { useWishlistContext } from "@/contexts/WishlistContext";
-import { useSearchContext } from "../layout";
+import { useSearchContext } from "@/contexts/SearchContext";
 
 // Wishlist item structure from API
 interface WishlistItem {

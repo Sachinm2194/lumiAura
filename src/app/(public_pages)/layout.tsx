@@ -1,21 +1,10 @@
 "use client";
 
-import { useState, createContext, useContext } from "react";
+import { useState } from "react";
 import { PrimaryHeader } from "@/components/core-components/primary-header";
 import Footer from "@/components/core-components/footer";
 import { useHeaderIntersection } from "@/hooks/useHeaderIntersection";
-
-interface SearchContextType {
-  onSearch: ((query: string) => void) | undefined;
-  setSearchHandler: (handler: (query: string) => void) => void;
-}
-
-const SearchContext = createContext<SearchContextType>({
-  setSearchHandler: () => { },
-  onSearch: undefined
-});
-
-export const useSearchContext = () => useContext(SearchContext);
+import { SearchContext } from "@/contexts/SearchContext";
 
 export default function PublicPagesLayout({
   children,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getCart } from "@/app/api/cart";
-import { useSearchContext } from "../layout";
+import { useSearchContext } from "@/contexts/SearchContext";
 import { useWishlistContext } from "@/contexts/WishlistContext";
 import CartItem from "@/components/core-components/cartItem";
 import { Button } from "@/components/ui/button";
