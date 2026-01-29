@@ -48,19 +48,19 @@ export default function CategoriesPage() {
   // 🔹 Initial fetch
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+  }, []);
 
   // 🔹 Handle search from header (submit/enter or icon click)
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     fetchCategories(query || undefined);
-  };
+  }, [fetchCategories]);
 
   // 🔹 Register search handler with header
   useEffect(() => {
     setSearchHandler(handleSearch);
     return () => setSearchHandler(() => {});
-  }, [setSearchHandler]);
+  }, [handleSearch]);
 
   const handleCategoryClick = (slug: string) => {
     router.push(`/category/${slug}`);

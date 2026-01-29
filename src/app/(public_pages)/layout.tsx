@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { PrimaryHeader } from "@/components/core-components/primary-header";
 import Footer from "@/components/core-components/footer";
 import { useHeaderIntersection } from "@/hooks/useHeaderIntersection";
@@ -15,9 +15,9 @@ export default function PublicPagesLayout({
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchHandler, setSearchHandlerState] = useState<((query: string) => void) | undefined>();
 
-  const setSearchHandler = (handler: (query: string) => void) => {
+  const setSearchHandler = useCallback((handler: (query: string) => void) => {
     setSearchHandlerState(() => handler);
-  };
+  }, []);
 
   return (
     <SearchContext.Provider value={{ onSearch: searchHandler, setSearchHandler }}>

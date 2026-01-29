@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { PrimaryHeader } from "@/components/core-components/primary-header";
@@ -15,9 +15,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const [searchHandler, setSearchHandler] = useState<((query: string) => void) | undefined>();
 
   // Function to set search handler from child components
-  const setSearchHandlerCallback = (handler: (query: string) => void) => {
+  const setSearchHandlerCallback = useCallback((handler: (query: string) => void) => {
     setSearchHandler(() => handler);
-  };
+  }, []);
 
   // Clear search handler when navigating to different pages
   useEffect(() => {

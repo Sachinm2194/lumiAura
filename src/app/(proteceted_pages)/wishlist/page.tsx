@@ -55,7 +55,7 @@ export default function WishlistPage() {
     });
 
     return () => setSearchHandler(() => {});
-  }, [setSearchHandler]);
+  }, []);
 
   // 🔹 Wishlist toggle (remove / add)
   const handleWishlistToggle = async (product: Product, isWishlisted: boolean) => {

@@ -45,7 +45,7 @@ export function useWishlist() {
 
   const isWishlisted = useCallback((productId: string): boolean => {
     return wishlistMap.has(productId);
-  }, [wishlistMap]);
+  }, []);
 
   const toggleWishlist = useCallback(async (product: Product, currentlyWishlisted: boolean) => {
     setIsToggling(true);
@@ -79,7 +79,7 @@ export function useWishlist() {
     } finally {
       setIsToggling(false);
     }
-  }, [wishlistMap]);
+  }, []);
 
   return {
     wishlistItems,
