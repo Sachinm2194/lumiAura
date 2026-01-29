@@ -4,8 +4,8 @@ import { GetWishlist } from "@/app/api/wishlist";
 import WishlistCard from "@/components/core-components/wishlist-card";
 import WishlistCardSkeleton from "@/components/core-components/wishlist-card-skeleton";
 import { Product } from "@/types/product";
-import { useRouter } from "next/navigation";
 import { useWishlistContext } from "@/contexts/WishlistContext";
+import { useSearchContext } from "../layout";
 
 // Wishlist item structure from API
 interface WishlistItem {
@@ -19,29 +19,61 @@ interface WishlistItem {
 export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-  const { toggleWishlist, refreshWishlist } = useWishlistContext();
+  const [searchQuery, setSearchQuery] = useState("");
+  const { toggleWishlist } = useWishlistContext();
+  const { setSearchHandler } = useSearchContext();
 
+  // Fetch wishlist function
+  const fetchWishlist = async (search?: string) => {
+    console.log("=== FETCH WISHLIST START ===");
+    console.log("fetchWishlist called with search:", search);
+    console.log("Search type:", typeof search);
+    console.log("Search is undefined:", search === undefined);
+    console.log("Search is empty string:", search === "");
+    
+    setIsLoading(true);
+    try {
+      const data = await GetWishlist(search);
+      // Extract products from wishlist items
+      // API returns: [{ id, userId, product: {...} }, ...]
+      const validWishlistItems = Array.isArray(data) 
+        ? data.filter((item: any) => item && item.product && item.product.id)
+        : [];
+      setWishlistItems(validWishlistItems);
+      console.log("Wishlist data fetched successfully, count:", validWishlistItems.length);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      setWishlistItems([]); // Set empty array on error
+    } finally {
+      setIsLoading(false);
+    }
+    console.log("=== FETCH WISHLIST END ===");
+  };
+
+  // Handle search from header
+  const handleSearch = (query: string) => {
+    console.log("=== WISHLIST SEARCH FLOW START ===");
+    console.log("handleSearch called with query:", `"${query}"`);
+    console.log("Query length:", query.length);
+    console.log("Query after trim:", `"${query.trim()}"`);
+    
+    setSearchQuery(query);
+    const searchParam = query || undefined;
+    console.log("Calling fetchWishlist with:", searchParam);
+    fetchWishlist(searchParam);
+    console.log("=== WISHLIST SEARCH FLOW END ===");
+  };
+
+  // Set search handler in layout on mount
   useEffect(() => {
-    const getWishlist = async () => {
-      setIsLoading(true);
-      try {
-        const data = await GetWishlist();
-        // Extract products from wishlist items
-        // API returns: [{ id, userId, product: {...} }, ...]
-        const validWishlistItems = Array.isArray(data) 
-          ? data.filter((item: any) => item && item.product && item.product.id)
-          : [];
-        setWishlistItems(validWishlistItems);
-        console.log("Wishlist data:", validWishlistItems);
-      } catch (error) {
-        console.error("Error fetching wishlist:", error);
-        setWishlistItems([]); // Set empty array on error
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    getWishlist();
+    setSearchHandler(handleSearch);
+    // Cleanup: remove search handler when component unmounts
+    return () => setSearchHandler(() => {});
+  }, [setSearchHandler]);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchWishlist();
   }, []);
 
   // Handle move to cart
@@ -65,7 +97,7 @@ export default function WishlistPage() {
         );
       } else {
         // Refresh wishlist to get updated data if item was added back
-        const data = await GetWishlist();
+        const data = await GetWishlist(searchQuery || undefined);
         const validWishlistItems = Array.isArray(data) 
           ? data.filter((item: any) => item && item.product && item.product.id)
           : [];
@@ -85,9 +117,27 @@ export default function WishlistPage() {
 
   return (
     <div className="w-full px-2 md:px-10 py-6">
-      <h1 className="text-3xl font-bold text-center mb-10 text-foreground">
-        My Wishlist
-      </h1>
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-bold text-foreground">
+          {searchQuery ? `Wishlist Search Results for "${searchQuery}"` : "My Wishlist"}
+        </h1>
+        {searchQuery && (
+          <p className="text-muted-foreground mt-2">
+            {isLoading ? "Searching..." : `Found ${wishlistItems.length} item${wishlistItems.length !== 1 ? 's' : ''}`}
+          </p>
+        )}
+        {searchQuery && (
+          <div className="mt-4">
+            <button
+              onClick={() => handleSearch("")}
+              className="text-sm text-primary hover:underline"
+            >
+              Clear search and show all wishlist items
+            </button>
+          </div>
+        )}
+      </div>
+      
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-10 max-w-7xl mx-auto">
           {Array.from({ length: 8 }).map((_, index) => (
@@ -96,12 +146,17 @@ export default function WishlistPage() {
         </div>
       ) : wishlistItems.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-muted-foreground text-lg">
-            Your wishlist is empty
-          </p>
-          <p className="text-muted-foreground text-sm mt-2">
-            Start adding products to your wishlist!
-          </p>
+          {searchQuery ? (
+            <div className="text-muted-foreground">
+              <p className="text-lg mb-2">No wishlist items found for "{searchQuery}"</p>
+              <p className="text-sm">Try searching with different keywords</p>
+            </div>
+          ) : (
+            <div className="text-muted-foreground">
+              <p className="text-lg">Your wishlist is empty</p>
+              <p className="text-sm mt-2">Start adding products to your wishlist!</p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-10 max-w-7xl mx-auto">

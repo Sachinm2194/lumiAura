@@ -1,9 +1,21 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, createContext, useContext } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { PrimaryHeader } from "@/components/core-components/primary-header";
+
+// Create a context for search functionality
+interface SearchContextType {
+  onSearch?: (query: string) => void;
+  setSearchHandler: (handler: (query: string) => void) => void;
+}
+
+const SearchContext = createContext<SearchContextType>({
+  setSearchHandler: () => {},
+});
+
+export const useSearchContext = () => useContext(SearchContext);
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -11,6 +23,17 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const hasRedirected = useRef(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchHandler, setSearchHandler] = useState<((query: string) => void) | undefined>();
+
+  // Function to set search handler from child components
+  const setSearchHandlerCallback = (handler: (query: string) => void) => {
+    setSearchHandler(() => handler);
+  };
+
+  // Clear search handler when navigating to different pages
+  useEffect(() => {
+    setSearchHandler(undefined);
+  }, [pathname]);
 
   // Redirect immediately when we know user is not authenticated
   // Redirect if: (loading completed AND not authenticated) OR (short delay passed AND not authenticated)
@@ -52,12 +75,13 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <>
+    <SearchContext.Provider value={{ onSearch: searchHandler, setSearchHandler: setSearchHandlerCallback }}>
       <PrimaryHeader
         menuActive={menuOpen}
         onMenuToggle={() => setMenuOpen((v) => !v)}
+        onSearch={searchHandler}
       />
       <main className="pt-16 w-full px-2 md:px-10">{children}</main>
-    </>
+    </SearchContext.Provider>
   );
 }
