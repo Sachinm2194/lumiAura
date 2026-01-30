@@ -47,7 +47,7 @@ export function useWishlist() {
     return wishlistMap.has(productId);
   }, [wishlistMap]);
 
-  const toggleWishlist = useCallback(async (product: Product, currentlyWishlisted: boolean) => {
+  const toggleWishlist = useCallback(async (product: Product, currentlyWishlisted: boolean, suppressToast: boolean = false) => {
     setIsToggling(true);
     const productId = product.productId;
 
@@ -61,7 +61,9 @@ export function useWishlist() {
           newSet.delete(productId);
           return newSet;
         });
-        toast.success(`${product.name} removed from wishlist`);
+        if (!suppressToast) {
+          toast.success(`${product.name} removed from wishlist`);
+        }
       } else {
         // add then refresh to get server shape
         await AddToWishlist(productId);
@@ -70,7 +72,9 @@ export function useWishlist() {
           setWishlistItems(wishlistData);
           syncMapFromItems(wishlistData);
         }
-        toast.success(`${product.name} added to wishlist`);
+        if (!suppressToast) {
+          toast.success(`${product.name} added to wishlist`);
+        }
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);

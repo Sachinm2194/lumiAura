@@ -7,6 +7,9 @@ import WishlistCardSkeleton from "@/components/core-components/wishlist-card-ske
 import { Product } from "@/types/product";
 import { useWishlistContext } from "@/contexts/WishlistContext";
 import { useSearchContext } from "@/contexts/SearchContext";
+import { addToCart } from "@/app/api/cart";
+import { handleApiError } from "@/lib/helpers/handleApiError";
+import { toast } from "react-toastify";
 
 // Wishlist item structure from API
 interface WishlistItem {
@@ -70,9 +73,24 @@ export default function WishlistPage() {
     }
   };
 
-  // 🔹 Move to cart (future)
-  const handleMoveToCart = (product: Product) => {
-    // TODO: Implement add to cart API
+  // 🔹 Move to cart: add to cart and remove from wishlist
+  const handleMoveToCart = async (product: Product) => {
+    try {
+      // Add product to cart
+      await addToCart({ productId: product.productId });
+
+      // Remove from wishlist (suppress toast to show only one message)
+      await toggleWishlist(product, true);
+
+      // Show single success toast
+      toast.success(`${product.name} added to cart!`);
+
+      // Refresh wishlist view
+      fetchWishlist();
+    } catch (error) {
+      console.error("Error moving to cart:", error);
+      handleApiError(error);
+    }
   };
 
   // 🔹 Product click (future navigation)

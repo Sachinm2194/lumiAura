@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getCart } from "@/app/api/cart";
+import { getCart, removeFromCart } from "@/app/api/cart";
 import { useSearchContext } from "@/contexts/SearchContext";
 import { useWishlistContext } from "@/contexts/WishlistContext";
+import { toast } from "react-toastify";
 import CartItem from "@/components/core-components/cartItem";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Trash, Trash2 } from "lucide-react";
 
 export default function CartPage() {
   const { setSearchHandler } = useSearchContext();
@@ -78,11 +79,25 @@ export default function CartPage() {
     }
   };
 
-  // 🔹 Remove single item
-  const handleRemoveItem = (itemId: number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
-    selectedItems.delete(itemId);
-    setSelectedItems(new Set(selectedItems));
+  // 🔹 Remove single item via API
+  const handleRemoveItem = async (itemId: number) => {
+    try {
+      const item = cartItems.find((i) => i.id === itemId);
+      if (!item?.product?.productId) return;
+
+      // Call removeFromCart API with single item
+      await removeFromCart([item.product.productId]);
+      
+      // Remove from local state
+      setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+      selectedItems.delete(itemId);
+      setSelectedItems(new Set(selectedItems));
+      
+      toast.success("Item removed from cart");
+    } catch (error) {
+      console.error("Error removing item:", error);
+      toast.error("Failed to remove item");
+    }
   };
 
   // 🔹 Move to wishlist
@@ -94,10 +109,29 @@ export default function CartPage() {
     }
   };
 
-  // 🔹 Remove selected items
-  const handleRemoveSelected = () => {
-    setCartItems((prev) => prev.filter((item) => !selectedItems.has(item.id)));
-    setSelectedItems(new Set());
+  // 🔹 Remove selected items via API
+  const handleRemoveSelected = async () => {
+    try {
+      // Get product IDs for selected items
+      const selectedProducts = cartItems
+        .filter((item) => selectedItems.has(item.id))
+        .map((item) => item.product?.productId)
+        .filter(Boolean);
+
+      if (selectedProducts.length === 0) return;
+
+      // Call removeFromCart API with multiple items
+      await removeFromCart(selectedProducts);
+      
+      // Remove from local state
+      setCartItems((prev) => prev.filter((item) => !selectedItems.has(item.id)));
+      setSelectedItems(new Set());
+      
+      toast.success(`${selectedProducts.length} item(s) removed from cart`);
+    } catch (error) {
+      console.error("Error removing items:", error);
+      toast.error("Failed to remove items");
+    }
   };
 
   // 🔹 Move selected to wishlist
@@ -135,14 +169,7 @@ export default function CartPage() {
     <div className="w-full py-4 pb-20 md:pb-2 md:py-6 px-3 md:px-4">
       <div className="max-w-7xl mx-auto">
         {/* Page Header */}
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Shopping Cart</h1>
-          <p className="text-xs md:text-sm text-muted-foreground mt-1">
-            {searchQuery
-              ? `Search results for "${searchQuery}"`
-              : "Review and manage your items"}
-          </p>
-        </div>
+        
 
         {/* Search Result Info */}
         {searchQuery && !isLoading && (
@@ -190,19 +217,20 @@ export default function CartPage() {
                 </div>
                 {selectedItems.size > 0 && (
                   <div className="flex items-center gap-2 text-xs md:text-sm">
-                    <span
+                    {/* <span
                       onClick={handleMoveSelectedToWishlist}
                       className="cursor-pointer text-primary hover:underline"
                     >
                       Move {selectedItems.size} Wishlist
                     </span>
 
-                    <span className="text-muted-foreground hidden sm:inline">|</span>
+                    <span className="text-muted-foreground hidden sm:inline">|</span> */}
 
                     <span
                       onClick={handleRemoveSelected}
-                      className="cursor-pointer text-destructive hover:underline"
+                      className="cursor-pointer flex items-center gap-2 text-destructive hover:underline"
                     >
+                      <Trash2 className="w-4 h-4 inline mr-1" />
                       Remove
                     </span>
                   </div>
