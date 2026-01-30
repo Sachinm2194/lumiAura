@@ -60,7 +60,7 @@ export default function CategoriesPage() {
   useEffect(() => {
     setSearchHandler(handleSearch);
     return () => setSearchHandler(() => {});
-  }, [handleSearch]);
+  }, [handleSearch, setSearchHandler]);
 
   const handleCategoryClick = (slug: string) => {
     router.push(`/category/${slug}`);

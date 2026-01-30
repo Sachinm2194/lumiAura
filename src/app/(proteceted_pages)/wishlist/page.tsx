@@ -26,10 +26,10 @@ export default function WishlistPage() {
   const { setSearchHandler } = useSearchContext();
 
   // 🔹 Single source of truth for fetching wishlist
-  const fetchWishlist = useCallback(async () => {
+  const fetchWishlist = useCallback(async (search?: string) => {
     setIsLoading(true);
     try {
-      const data = await GetWishlist(searchQuery || undefined);
+      const data = await GetWishlist(search);
 
       const validWishlistItems = Array.isArray(data)
         ? data.filter((item: any) => item?.product?.id)
@@ -41,21 +41,24 @@ export default function WishlistPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery]);
+  }, []);
 
-  // 🔹 React to search query changes (initial load + search)
+  // 🔹 Initial fetch on mount
   useEffect(() => {
     fetchWishlist();
   }, [fetchWishlist]);
 
+  // 🔹 Handle search from header (submit/enter or icon click)
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    fetchWishlist(query || undefined);
+  }, [fetchWishlist]);
+
   // 🔹 Register search handler from layout
   useEffect(() => {
-    setSearchHandler((query: string) => {
-      setSearchQuery(query);
-    });
-
+    setSearchHandler(handleSearch);
     return () => setSearchHandler(() => {});
-  }, []);
+  }, [handleSearch, setSearchHandler]);
 
   // 🔹 Wishlist toggle (remove / add)
   const handleWishlistToggle = async (product: Product, isWishlisted: boolean) => {
