@@ -193,7 +193,7 @@ export default function CartPage() {
             {/* Left Side - Cart Items List */}
             <div className="lg:col-span-2 space-y-3 md:space-y-4">
               {/* Select All / Deselect All */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 px-3 md:px-4 py-2 md:py-3 bg-muted rounded-lg">
+              <div className="flex flex-row justify-between gap-2 sm:gap-3 px-3 md:px-4 py-2 md:py-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="select-all"
