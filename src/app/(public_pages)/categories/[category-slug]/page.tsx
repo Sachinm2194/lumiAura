@@ -128,7 +128,6 @@ export default function CategoryProductsPage() {
               <ProductCard
                 key={product.id}
                 product={product}
-                initialWishlisted={isWishlisted(product.productId)}
                 onWishlistToggle={toggleWishlist}
                 onClick={(product) => {
                   router.push(`/categories/${categorySlug}/${product.slug}`);

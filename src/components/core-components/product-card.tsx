@@ -1,8 +1,11 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Star, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Product, ProductCardProps } from '@/types/product';
 import { Button } from '../ui/button';
+import { useWishlistContext } from '@/contexts/WishlistContext';
 
 export default function ProductCard({ 
   product, 
@@ -12,6 +15,9 @@ export default function ProductCard({
   onWishlistToggle,
   initialWishlisted = false
 }: ProductCardProps) {
+  // Get wishlist state from context
+  const { isWishlisted: isProductWishlisted } = useWishlistContext();
+  
   // Get default variant (or first variant if no default)
   const defaultVariant = product.variants?.find(v => v.isDefault) || product.variants?.[0];
   
@@ -34,19 +40,15 @@ export default function ProductCard({
   };
   
   const [imageUrl, setImageUrl] = useState(getImageUrl());
-  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
   
-  // Sync with prop changes (e.g., when wishlist is updated from parent)
-  React.useEffect(() => {
-    setIsWishlisted(initialWishlisted);
-  }, [initialWishlisted]);
+  // Get the current wishlist status from context
+  const isWishlisted = isProductWishlisted(product.productId);
   
   // Handle wishlist toggle
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
-    const newWishlistState = !isWishlisted;
-    setIsWishlisted(newWishlistState);
-    onWishlistToggle?.(product, newWishlistState);
+    // Pass the current state (from context) to the callback
+    onWishlistToggle?.(product, isWishlisted);
   };
   
   const handleImageError = () => {

@@ -14,10 +14,7 @@ export async function GetWishlist(search?: string) {
             console.log("No search param added (search is empty or undefined)");
         }
         
-        console.log("Final params object:", params);
-        console.log("Params keys length:", Object.keys(params).length);
-        console.log("Expected URL:", `${process.env.NEXT_PUBLIC_BASE_URL}/wishlist${Object.keys(params).length ? '?' + new URLSearchParams(params).toString() : ''}`);
-        
+       
         // Additional verification
         if (Object.keys(params).length > 0) {
             console.log("✅ SEARCH PARAM WILL BE SENT");
@@ -26,8 +23,6 @@ export async function GetWishlist(search?: string) {
         }
         
         const response = await axiosInstance.get("/wishlist", { params });
-        console.log("Wishlist API response received, data length:", response.data?.length || 0);
-        console.log("=== GET WISHLIST END ===");
         
         return response.data || response;
     } catch (error) {

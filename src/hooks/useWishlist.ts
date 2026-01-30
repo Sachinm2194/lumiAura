@@ -41,11 +41,11 @@ export function useWishlist() {
 
   useEffect(() => {
     refreshWishlist();
-  }, [refreshWishlist]);
+  }, []);
 
   const isWishlisted = useCallback((productId: string): boolean => {
     return wishlistMap.has(productId);
-  }, []);
+  }, [wishlistMap]);
 
   const toggleWishlist = useCallback(async (product: Product, currentlyWishlisted: boolean) => {
     setIsToggling(true);
@@ -74,7 +74,6 @@ export function useWishlist() {
       }
     } catch (error) {
       console.error("Error toggling wishlist:", error);
-      toast.error("Failed to update wishlist. Please try again.");
       throw error;
     } finally {
       setIsToggling(false);

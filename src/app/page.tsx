@@ -107,7 +107,6 @@ export default function Home() {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  initialWishlisted={isWishlisted(product.productId)}
                   onWishlistToggle={toggleWishlist}
                   onClick={(product) => {
                     router.push(`/${product.slug}`);

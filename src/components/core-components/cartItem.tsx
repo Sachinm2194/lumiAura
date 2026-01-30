@@ -20,12 +20,16 @@ export default function CartItem({
   onRemove,
   onMoveToWishlist,
 }: CartItemProps) {
-  const { isWishlisted } = useWishlistContext();
+  const { isWishlisted, toggleWishlist } = useWishlistContext();
   const isInWishlist = isWishlisted(item.product.productId);
 
-  const handleMoveToWishlist = async () => {
-    onMoveToWishlist(item.product);
-    onRemove(item.id);
+  const handleWishlistToggle = async () => {
+    try {
+      // Pass the current wishlist state to toggle it
+      await toggleWishlist(item.product, isInWishlist);
+    } catch (error) {
+      console.error("Error toggling wishlist:", error);
+    }
   };
 
   const price = parseFloat(item.variant?.sellingPrice || "0");
@@ -47,16 +51,16 @@ export default function CartItem({
 
         <div className="flex items-center gap-2">
           <span
-            onClick={handleMoveToWishlist}
-            className={`cursor-pointer flex items-center gap-1 hover:underline ${
-              isInWishlist ? "text-primary" : "text-muted-foreground"
+            onClick={handleWishlistToggle}
+            className={`cursor-pointer flex items-center gap-1 hover:underline transition-colors ${
+              isInWishlist ? "text-red-500" : "text-muted-foreground"
             }`}
           >
             <Heart
               size={14}
               fill={isInWishlist ? "currentColor" : "none"}
             />
-            Wishlist
+            {isInWishlist ? "In Wishlist" : "Add to Wishlist"}
           </span>
 
           <span className="text-muted-foreground">|</span>

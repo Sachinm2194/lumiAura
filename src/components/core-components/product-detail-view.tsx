@@ -625,7 +625,6 @@ export default function ProductDetailView({
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
-                  initialWishlisted={isWishlisted(relatedProduct.productId)}
                   onWishlistToggle={toggleWishlist}
                   onClick={(product) => {
                     router.push(`/${product.slug}`);
