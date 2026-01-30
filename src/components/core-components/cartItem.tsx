@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Trash2, Heart, Minus, Plus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -36,6 +36,30 @@ export default function CartItem({
   const isInWishlist = isWishlisted(item.product.productId);
   const [quantity, setQuantity] = useState(item.quantity || 1);
 
+  console.log("CartItem Rendered:", item);
+  // Determine default variant (prefer server-provided default, fallback to first)
+  const defaultVariant =
+    item.product?.variants?.find((v: any) => v.isDefault) ||
+    item.product?.variants?.[0];
+
+  // Support variants that use `variantId` or `id` fields in API
+  const initialVariantId =
+    item.variant?.variantId?.toString() ||
+    item.variant?.id?.toString() ||
+    defaultVariant?.variantId?.toString() ||
+    defaultVariant?.id?.toString();
+
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(
+    initialVariantId
+  );
+
+  const selectedVariant =
+    item.product?.variants?.find(
+      (v: any) =>
+        v.variantId?.toString() === selectedVariantId ||
+        v.id?.toString() === selectedVariantId
+    ) || defaultVariant;
+
   const handleWishlistToggle = async () => {
     try {
       await toggleWishlist(item.product, isInWishlist);
@@ -52,11 +76,25 @@ export default function CartItem({
   };
 
   const handleVariantChange = (variantId: string) => {
+    setSelectedVariantId(variantId);
     onVariantChange?.(item.id, variantId);
   };
 
-  const price = parseFloat(item.variant?.sellingPrice || "0");
+  // use selected variant for pricing
+  const price = parseFloat(selectedVariant?.sellingPrice || "0");
   const totalPrice = price * quantity;
+
+  // Notify parent about initial/default variant selection (if provided)
+  useEffect(() => {
+    if (selectedVariantId) {
+      const itemVariantIdStr =
+        item.variant?.variantId?.toString() || item.variant?.id?.toString();
+      if (itemVariantIdStr !== selectedVariantId) {
+        onVariantChange?.(item.id, selectedVariantId);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Get product image
   const getProductImage = () => {
@@ -156,18 +194,18 @@ export default function CartItem({
                 Variant
               </label>
               <Select
-                defaultValue={item.variant?.variantId?.toString()}
-                onValueChange={handleVariantChange}
-              >
+                  value={selectedVariantId}
+                  onValueChange={handleVariantChange}
+                >
                 <SelectTrigger className="w-full sm:w-32 h-8 text-xs">
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
                   {item.product.variants.map((variant: any, index: number) => (
                     <SelectItem
-                      key={variant.variantId || index}
+                      key={variant.variantId || variant.id || index}
                       value={
-                        variant.variantId?.toString() || `variant-${index}`
+                        variant.variantId?.toString() || variant.id?.toString() || `variant-${index}`
                       }
                     >
                       <span className="text-xs">
