@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { getCart, removeFromCart } from "@/app/api/cart";
+import { getCart, removeFromCart, updateCartItem } from "@/app/api/cart";
 import { useSearchContext } from "@/contexts/SearchContext";
 import { useWishlistContext } from "@/contexts/WishlistContext";
 import { toast } from "react-toastify";
@@ -146,6 +146,101 @@ export default function CartPage() {
     setSelectedItems(new Set());
   };
 
+  // 🔹 Unified update handler - always sends both quantity and variantId
+  const updateCartItemData = async (
+    itemId: number,
+    updates: { quantity?: number; variantId?: string | number }
+  ) => {
+    try {
+      const item = cartItems.find((i) => i.id === itemId);
+      if (!item?.product?.productId) return;
+
+      // Get current variant ID - check multiple sources
+      let currentVariantId: number | string | undefined = 
+        item.variant?.variantId || 
+        item.variant?.id ||
+        item.product?.variants?.[0]?.variantId ||
+        item.product?.variants?.[0]?.id;
+
+      let payloadQuantity: number;
+      let payloadVariantId: number | string;
+
+      // Determine what goes into payload based on what's being updated
+      if (updates.quantity !== undefined) {
+        // Quantity is being updated: send UPDATED qty + CURRENT variant
+        payloadQuantity = updates.quantity;
+        payloadVariantId = currentVariantId || 0;
+      } else if (updates.variantId !== undefined) {
+        // Variant is being updated: send CURRENT qty + UPDATED variant
+        payloadQuantity = item.quantity;
+        // Convert to number
+        const variantId = updates.variantId;
+        if (typeof variantId === "string") {
+          payloadVariantId = parseInt(variantId, 10);
+        } else {
+          payloadVariantId = variantId;
+        }
+      } else {
+        // No update provided
+        return;
+      }
+
+      // Always send both fields in payload (mandatory)
+      const payload = {
+        quantity: payloadQuantity,
+        variantId: Number(payloadVariantId),
+      };
+
+      console.log("Sending payload:", payload);
+      await updateCartItem(item.product.productId, payload);
+
+      // If variant changed, find and update variant details
+      if (updates.variantId) {
+        const selectedVariant = item.product.variants?.find(
+          (v: any) =>
+            v.variantId === payloadVariantId ||
+            v.id === payloadVariantId
+        );
+
+        setCartItems((prev) =>
+          prev.map((i) =>
+            i.id === itemId
+              ? {
+                  ...i,
+                  quantity: payloadQuantity,
+                  variant: selectedVariant || { variantId: payloadVariantId },
+                }
+              : i
+          )
+        );
+
+        toast.success("Variant updated");
+      } else {
+        // Only quantity changed
+        setCartItems((prev) =>
+          prev.map((i) =>
+            i.id === itemId ? { ...i, quantity: payloadQuantity } : i
+          )
+        );
+
+        toast.success("Quantity updated");
+      }
+    } catch (error) {
+      console.error("Error updating cart item:", error);
+      toast.error("Failed to update cart item");
+    }
+  };
+
+  // 🔹 Handle quantity change
+  const handleQuantityChange = (itemId: number, newQuantity: number) => {
+    updateCartItemData(itemId, { quantity: newQuantity });
+  };
+
+  // 🔹 Handle variant change
+  const handleVariantChange = (itemId: number, variantId: string | number) => {
+    updateCartItemData(itemId, { variantId });
+  };
+
   // 🔹 Calculate totals
   const selectedCartItems = cartItems.filter((item) =>
     selectedItems.has(item.id),
@@ -247,6 +342,8 @@ export default function CartPage() {
                     onSelect={handleSelectItem}
                     onRemove={handleRemoveItem}
                     onMoveToWishlist={handleMoveToWishlist}
+                    onQuantityChange={handleQuantityChange}
+                    onVariantChange={handleVariantChange}
                   />
                 ))}
               </div>

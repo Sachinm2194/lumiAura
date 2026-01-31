@@ -28,10 +28,21 @@ export async function addToCart(product: AddProductToCartPayload) {
     productId: product.productId,
     ...(product.quantity && { quantity: product.quantity }),
     ...(product.variantId && { variantId: product.variantId }),
-  }); 
+  });
   return response.data || response;
 }
 
+export async function updateCartItem(
+  productId: string,
+  updates: { quantity: number; variantId: number },
+) {
+  {
+    const response = await axiosInstance.post(`/cart/update/${productId}`, {
+      ...updates,
+    });
+    return response.data || response;
+  }
+}
 
 export async function removeFromCart(productIds: string[]) {
   const response = await axiosInstance.post(`/cart/remove`, {
