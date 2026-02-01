@@ -191,7 +191,6 @@ export default function CartPage() {
         variantId: Number(payloadVariantId),
       };
 
-      console.log("Sending payload:", payload);
       await updateCartItem(item.product.productId, payload);
 
       // If variant changed, find and update variant details
@@ -214,7 +213,7 @@ export default function CartPage() {
           )
         );
 
-        toast.success("Variant updated");
+        // toast.success("Variant updated");
       } else {
         // Only quantity changed
         setCartItems((prev) =>
@@ -223,7 +222,7 @@ export default function CartPage() {
           )
         );
 
-        toast.success("Quantity updated");
+        // toast.success("Quantity updated");
       }
     } catch (error) {
       console.error("Error updating cart item:", error);

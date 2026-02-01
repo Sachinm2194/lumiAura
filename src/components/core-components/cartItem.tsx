@@ -190,18 +190,31 @@ export default function CartItem({
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent>
-                  {item.product.variants.map((variant: any, index: number) => (
-                    <SelectItem
-                      key={variant.variantId || variant.id || index}
-                      value={
-                        (variant.variantId || variant.id || index).toString()
-                      }
-                    >
-                      <span className="text-xs">
-                        {variant.variantName}
-                      </span>
-                    </SelectItem>
-                  ))}
+                  {item.product.variants.map((variant: any, index: number) => {
+                    const rawId = variant.variantId ?? variant.id ?? index;
+                    const valueStr = rawId.toString();
+                    const stock = typeof variant.quantity === "number" ? variant.quantity : Number(variant.quantity) || 0;
+                    const isOutOfStock = stock <= 0;
+
+                    return (
+                      <SelectItem
+                        key={rawId}
+                        value={valueStr}
+                        disabled={isOutOfStock}
+                        aria-disabled={isOutOfStock}
+                        title={isOutOfStock ? "Out of stock" : `In stock: ${stock}`}
+                      >
+                        <div className="w-full flex items-center justify-between">
+                          <span className="text-xs">{variant.variantName}</span>
+                          {isOutOfStock ? (
+                            <span className="text-xxs text-destructive ml-2">Out of stock</span>
+                          ) : (
+                            <span className="text-xxs text-muted-foreground ml-2">{`IN: ${stock}`}</span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
