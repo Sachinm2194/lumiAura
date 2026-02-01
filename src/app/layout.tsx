@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import TopLoader from "@/components/core-components/top-loader";
@@ -49,22 +50,24 @@ export default function RootLayout({
         >
           <TopLoader />
           <AuthProvider>
-            <WishlistProvider>
-              <ToastContainer
-                position="top-right"
-                autoClose={4000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-              />
-              {children}
-              <BottomNavigationFooter />
-            </WishlistProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <ToastContainer
+                  position="top-right"
+                  autoClose={4000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  theme="light"
+                />
+                {children}
+                <BottomNavigationFooter />
+              </WishlistProvider>
+            </CartProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GetProductBySlug } from "@/app/api/products";
+import { addToCart } from "@/app/api/cart";
+import { useCartContext } from "@/contexts/CartContext";
 import { Product, ProductVariant } from "@/types/product";
 import { useWishlistContext } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,7 @@ export default function ProductDetailView({
   const [isImageZoomed, setIsImageZoomed] = useState(false);
 
   const { isWishlisted, toggleWishlist } = useWishlistContext();
+  const { refreshCart } = useCartContext();
 
   // Fetch product data
   useEffect(() => {
@@ -121,7 +124,7 @@ export default function ProductDetailView({
   };
 
   // Handle add to cart
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product || !selectedVariant) {
       toast.error("Please select a variant");
       return;
@@ -132,17 +135,25 @@ export default function ProductDetailView({
       return;
     }
 
-    // TODO: Implement add to cart API
-    // Payload should include: productId, variantId, quantity
-    const cartItem = {
-      productId: product.productId,
-      variantId: selectedVariant.id,
-      quantity: quantity,
-      variant: selectedVariant
-    };
+    try {
+      // Call add to cart API
+      await addToCart({
+        productId: product.productId,
+        variantId: selectedVariant.id.toString(),
+        quantity: quantity,
+      });
 
-    console.log("Add to cart:", cartItem);
-    toast.success(`${product.name} (${selectedVariant.variantName}) x${quantity} added to cart`);
+      // Refresh cart to get accurate count from server
+      await refreshCart();
+
+      toast.success(`${product.name} (${selectedVariant.variantName}) x${quantity} added to cart`);
+      
+      // Reset quantity after successful add
+      setQuantity(1);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add item to cart. Please try again.");
+    }
   };
 
   // Handle quantity change

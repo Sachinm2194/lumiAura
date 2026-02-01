@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { getCart, removeFromCart, updateCartItem } from "@/app/api/cart";
 import { useSearchContext } from "@/contexts/SearchContext";
 import { useWishlistContext } from "@/contexts/WishlistContext";
+import { useCartContext } from "@/contexts/CartContext";
 import { toast } from "react-toastify";
 import CartItem from "@/components/core-components/cartItem";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { ShoppingBag, Trash, Trash2 } from "lucide-react";
 export default function CartPage() {
   const { setSearchHandler } = useSearchContext();
   const { toggleWishlist } = useWishlistContext();
+  const { refreshCart } = useCartContext();
 
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,6 +90,9 @@ export default function CartPage() {
       // Call removeFromCart API with single item
       await removeFromCart([item.product.productId]);
       
+      // Refresh cart badge from server
+      await refreshCart();
+      
       // Remove from local state
       setCartItems((prev) => prev.filter((item) => item.id !== itemId));
       selectedItems.delete(itemId);
@@ -122,6 +127,9 @@ export default function CartPage() {
 
       // Call removeFromCart API with multiple items
       await removeFromCart(selectedProducts);
+      
+      // Refresh cart badge from server
+      await refreshCart();
       
       // Remove from local state
       setCartItems((prev) => prev.filter((item) => !selectedItems.has(item.id)));

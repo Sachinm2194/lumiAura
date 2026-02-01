@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Product } from '@/types/product';
 import { Button } from '../ui/button';
 import { useWishlistContext } from '@/contexts/WishlistContext';
+import { useCartContext } from '@/contexts/CartContext';
 
 export interface WishlistCardProps {
   product: Product;
@@ -24,6 +25,7 @@ export default function WishlistCard({
 }: WishlistCardProps) {
   // Get wishlist state from context
   const { isWishlisted: isProductWishlisted } = useWishlistContext();
+  const { refreshCart } = useCartContext();
   
   const [imageUrl, setImageUrl] = useState(() => {
     const primaryImage = product.images?.find(img => img.isPrimary) || product.images?.[0];
@@ -50,7 +52,10 @@ export default function WishlistCard({
 
   const handleMoveToCartClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    // Call the parent's handler to add to cart
     onMoveToCart?.(product);
+    // Refresh cart to get accurate count from server
+    refreshCart();
   };
 
   const handleImageError = () => {

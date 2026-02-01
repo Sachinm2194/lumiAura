@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useWishlistContext } from "@/contexts/WishlistContext";
+import { useRouter } from "next/navigation";
 
 interface CartItemProps {
   item: any;
@@ -35,8 +36,7 @@ export default function CartItem({
   const { isWishlisted, toggleWishlist } = useWishlistContext();
   const isInWishlist = isWishlisted(item.product.productId);
   const [quantity, setQuantity] = useState(item.quantity || 1);
-
-  console.log("CartItem Rendered:", item);
+const router=useRouter()
   // Determine default variant (prefer server-provided default, fallback to first)
   const defaultVariant =
     item.product?.variants?.find((v: any) => v.isDefault) ||
@@ -151,7 +151,7 @@ export default function CartItem({
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           {/* Product Name & Description */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base text-card-foreground line-clamp-2">
+            <h3 className="font-semibold text-sm sm:text-base text-card-foreground line-clamp-2" onClick={() => router.push(`/${item.product.slug}`)}>
               {item.product.name}
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">

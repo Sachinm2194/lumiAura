@@ -24,6 +24,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SearchBar } from "@/components/core-components/search-bar";
 import { useWishlistContext } from "@/contexts/WishlistContext";
+import { useCartContext } from "@/contexts/CartContext";
 
 interface Props {
   menuActive: boolean;
@@ -37,10 +38,14 @@ export function PrimaryHeader({ menuActive, onMenuToggle, onSearch }: Props) {
   const [showButtons, setShowButtons] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   
+  // Get cart count from context
+  const { cartCount } = useCartContext();
+  
   // Get wishlist count for badge
   const { wishlistMap } = useWishlistContext();
   const wishlistCount = wishlistMap.size;
-  const displayCount = wishlistCount > 9 ? "9+" : wishlistCount.toString();
+  const displayWishlistCount = wishlistCount > 9 ? "9+" : wishlistCount.toString();
+  const displayCartCount = cartCount > 9 ? "9+" : cartCount.toString();
 
   // Detect scroll to shrink header and add shadow
   useEffect(() => {
@@ -170,7 +175,7 @@ export function PrimaryHeader({ menuActive, onMenuToggle, onSearch }: Props) {
                   {/* Wishlist Count Badge */}
                   {wishlistCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] px-1 border-2 border-background">
-                      {displayCount}
+                      {displayWishlistCount}
                     </span>
                   )}
                 </Button>
@@ -180,6 +185,12 @@ export function PrimaryHeader({ menuActive, onMenuToggle, onSearch }: Props) {
               <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative transition-transform duration-300">
                   <ShoppingCart className={`transition-all duration-300 ${isScrolled ? "h-4 w-4" : "h-5 w-5"}`} />
+                  {/* Cart Count Badge */}
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] px-1 border-2 border-background">
+                      {displayCartCount}
+                    </span>
+                  )}
                 </Button>
               </Link>
 
