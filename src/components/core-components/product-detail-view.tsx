@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { GetProductBySlug } from "@/app/api/products";
 import { addToCart } from "@/app/api/cart";
 import { useCartContext } from "@/contexts/CartContext";
+import { useCheckoutContext } from "@/contexts/CheckoutContext";
 import { Product, ProductVariant } from "@/types/product";
 import { useWishlistContext } from "@/contexts/WishlistContext";
+import { OrderItem } from "@/types/checkout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +54,7 @@ export default function ProductDetailView({
 
   const { isWishlisted, toggleWishlist } = useWishlistContext();
   const { refreshCart } = useCartContext();
+  const { addOrderItem, setIsBuyNow } = useCheckoutContext();
 
   // Fetch product data
   useEffect(() => {
@@ -154,6 +157,47 @@ export default function ProductDetailView({
       console.error("Error adding to cart:", error);
       toast.error("Failed to add item to cart. Please try again.");
     }
+  };
+
+  // Handle buy now
+  const handleBuyNow = () => {
+    if (!product || !selectedVariant) {
+      toast.error("Please select a variant");
+      return;
+    }
+
+    if (selectedVariant.quantity === 0) {
+      toast.error("This variant is out of stock");
+      return;
+    }
+
+    // Build order item from product and selected variant
+    const variantId = selectedVariant.id;
+    
+    // Extract variant properties
+    const productVariant: Record<string, any> = {};
+    if (selectedVariant.variantName) {
+      const variantName = selectedVariant.variantName.toLowerCase();
+      if (variantName.includes("ml") || variantName.includes("g")) {
+        productVariant.size = selectedVariant.variantName;
+      } else {
+        productVariant.color = selectedVariant.variantName;
+      }
+    }
+
+    const orderItem: OrderItem = {
+      productId: product.productId,
+      ...(variantId && { variantId: Number(variantId) }),
+      quantity: quantity,
+      ...(Object.keys(productVariant).length > 0 && { productVariant }),
+    };
+
+    // Add to checkout context
+    addOrderItem(orderItem);
+    setIsBuyNow(true);
+
+    // Navigate to address page (skipping cart)
+    router.push("/checkout/address");
   };
 
   // Handle quantity change
@@ -472,10 +516,7 @@ export default function ProductDetailView({
                 size="lg"
                 variant="outline"
                 className="flex-1 gap-2 h-12 md:h-11 text-base md:text-sm font-semibold active:scale-95"
-                onClick={() => {
-                  // TODO: Implement buy now
-                  toast.info("Buy Now feature coming soon");
-                }}
+                onClick={handleBuyNow}
                 disabled={!selectedVariant || selectedVariant.quantity === 0}
               >
                 Buy Now

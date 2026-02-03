@@ -1,21 +1,27 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { getCart, removeFromCart, updateCartItem } from "@/app/api/cart";
 import { useSearchContext } from "@/contexts/SearchContext";
 import { useWishlistContext } from "@/contexts/WishlistContext";
 import { useCartContext } from "@/contexts/CartContext";
+import { useCheckoutContext } from "@/contexts/CheckoutContext";
 import { toast } from "react-toastify";
 import CartItem from "@/components/core-components/cartItem";
+import CheckoutStepper from "@/components/core-components/checkout-stepper";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ShoppingBag, Trash, Trash2 } from "lucide-react";
+import { OrderItem } from "@/types/checkout";
 
 export default function CartPage() {
+  const router = useRouter();
   const { setSearchHandler } = useSearchContext();
   const { toggleWishlist } = useWishlistContext();
   const { refreshCart } = useCartContext();
+  const { setOrderItems, setIsBuyNow } = useCheckoutContext();
 
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -248,6 +254,50 @@ export default function CartPage() {
     updateCartItemData(itemId, { variantId });
   };
 
+  // 🔹 Handle Place Order
+  const handlePlaceOrder = () => {
+    if (selectedItems.size === 0) {
+      toast.error("Please select at least one item to place order");
+      return;
+    }
+
+    const selectedCartItems = cartItems.filter((item) =>
+      selectedItems.has(item.id),
+    );
+
+    // Map cart items to order items
+    const orderItems: OrderItem[] = selectedCartItems.map((item) => {
+      const variantId = item.variant?.variantId || item.variant?.id;
+      const variant = item.variant || item.product?.variants?.[0];
+      
+      // Extract variant properties
+      const productVariant: Record<string, any> = {};
+      if (variant?.variantName) {
+        // Try to parse variant name for size/color
+        const variantName = variant.variantName.toLowerCase();
+        if (variantName.includes("ml") || variantName.includes("g")) {
+          productVariant.size = variant.variantName;
+        } else {
+          productVariant.color = variant.variantName;
+        }
+      }
+
+      return {
+        productId: item.product.productId,
+        ...(variantId && { variantId: Number(variantId) }),
+        quantity: item.quantity,
+        ...(Object.keys(productVariant).length > 0 && { productVariant }),
+      };
+    });
+
+    // Set order items in checkout context
+    setOrderItems(orderItems);
+    setIsBuyNow(false);
+    
+    // Navigate to address page
+    router.push("/checkout/address");
+  };
+
   // 🔹 Calculate totals
   const selectedCartItems = cartItems.filter((item) =>
     selectedItems.has(item.id),
@@ -270,8 +320,8 @@ export default function CartPage() {
   return (
     <div className="w-full py-4 pb-20 md:pb-2 md:py-6 px-3 md:px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Page Header */}
-        
+        {/* Stepper */}
+        <CheckoutStepper currentStep={1} />
 
         {/* Search Result Info */}
         {searchQuery && !isLoading && (
@@ -395,6 +445,7 @@ export default function CartPage() {
                 <Button
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2 h-auto rounded-lg text-sm md:text-base"
                   disabled={selectedItems.size === 0}
+                  onClick={handlePlaceOrder}
                 >
                   Place Order
                 </Button>
@@ -418,6 +469,7 @@ export default function CartPage() {
               <Button
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-2 h-auto rounded-lg text-sm"
                 disabled={selectedItems.size === 0}
+                onClick={handlePlaceOrder}
               >
                 Place Order
               </Button>

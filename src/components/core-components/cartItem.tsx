@@ -151,7 +151,7 @@ const router=useRouter()
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           {/* Product Name & Description */}
           <div>
-            <h3 className="font-semibold text-sm sm:text-base text-card-foreground line-clamp-2" onClick={() => router.push(`/${item.product.slug}`)}>
+            <h3 className="font-semibold text-sm sm:text-base text-card-foreground line-clamp-2 cursor-pointer hover:text-primary transition-colors hover:underline" onClick={() => router.push(`/${item.product.slug}`)}>
               {item.product.name}
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1">
