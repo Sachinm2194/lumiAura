@@ -92,6 +92,7 @@ export function PrimaryHeader({ menuActive, onMenuToggle, onSearch }: Props) {
   // Get user initials for avatar
   const getUserInitials = () => {
     if (!user?.email) return "U";
+    console.log("user", user);
     const emailParts = user.email.split("@");
     const namePart = emailParts[0];
     if (namePart.length >= 2) {

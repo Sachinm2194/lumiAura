@@ -6,8 +6,8 @@ import { CheckoutState, OrderItem, Address, BuyNowProductData } from "@/types/ch
 interface CheckoutContextType extends CheckoutState {
   setOrderItems: (items: OrderItem[]) => void;
   addOrderItem: (item: OrderItem, productData?: BuyNowProductData | null) => void;
-  setShippingAddress: (address: Address) => void;
-  setBillingAddress: (address: Address) => void;
+  setShippingAddress: (address: Address | null) => void;
+  setBillingAddress: (address: Address | null) => void;
   setNotes: (notes: string) => void;
   setIsBuyNow: (isBuyNow: boolean) => void;
   clearCheckout: () => void;
@@ -67,11 +67,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const setShippingAddress = useCallback((address: Address) => {
+  const setShippingAddress = useCallback((address: Address | null) => {
     setState((prev) => ({ ...prev, shippingAddress: address }));
   }, []);
 
-  const setBillingAddress = useCallback((address: Address) => {
+  const setBillingAddress = useCallback((address: Address | null) => {
     setState((prev) => ({ ...prev, billingAddress: address }));
   }, []);
 

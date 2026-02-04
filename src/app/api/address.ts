@@ -1,69 +1,45 @@
 import axiosInstance from "@/lib/helpers/axiosInstance";
-import { Address } from "@/types/checkout";
 
-/**
- * Fetch all addresses for the current user
- */
-export async function getAddresses(): Promise<Address[]> {
-  try {
+interface AddressPayload {
+    fullName: string;
+    addressLine1: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone: string;
+    addressLine2?: string;
+    isDefault?: boolean;
+    addressType?: string;
+    label?: string;
+
+}
+export async function GetAllAddresses() {
     const response = await axiosInstance.get("/addresses");
-    return response.data || [];
-  } catch (error) {
-    console.error("Error fetching addresses:", error);
-    throw error;
-  }
-}
-
-/**
- * Add a new address
- */
-export async function addAddress(addressData: Address): Promise<Address> {
-  try {
-    const response = await axiosInstance.post("/addresses", addressData);
     return response.data || response;
-  } catch (error) {
-    console.error("Error adding address:", error);
-    throw error;
-  }
 }
 
-/**
- * Update an existing address
- */
-export async function updateAddress(
-  addressId: string | number,
-  addressData: Partial<Address>
-): Promise<Address> {
-  try {
-    const response = await axiosInstance.put(`/addresses/${addressId}`, addressData);
+export async function GetAddressById(id: string) {
+    const response = await axiosInstance.get(`/addresses/${id}`);
     return response.data || response;
-  } catch (error) {
-    console.error("Error updating address:", error);
-    throw error;
-  }
 }
 
-/**
- * Delete an address
- */
-export async function deleteAddress(addressId: string | number): Promise<void> {
-  try {
-    await axiosInstance.delete(`/addresses/${addressId}`);
-  } catch (error) {
-    console.error("Error deleting address:", error);
-    throw error;
-  }
+export async function CreateAddress(address: AddressPayload) {
+    const response = await axiosInstance.post("/addresses", address);
+    return response.data || response;
 }
 
-/**
- * Set an address as default
- */
-export async function setDefaultAddress(addressId: string | number): Promise<void> {
-  try {
-    await axiosInstance.post(`/addresses/${addressId}/set-default`);
-  } catch (error) {
-    console.error("Error setting default address:", error);
-    throw error;
-  }
+export async function UpdateAddress(id: string, address: AddressPayload) {
+    const response = await axiosInstance.put(`/addresses/${id}`, address);
+    return response.data || response;
 }
 
+export async function DeleteAddress(id: string) {
+    const response = await axiosInstance.delete(`/addresses/${id}`);
+    return response.data || response;
+}
+
+export async function SetDefaultAddress(addressId: string) {
+  const response = await axiosInstance.put(`/addresses/${addressId}/set-default`);
+  return response.data || response;
+}
