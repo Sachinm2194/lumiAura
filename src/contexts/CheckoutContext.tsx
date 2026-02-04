@@ -1,11 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { CheckoutState, OrderItem, Address } from "@/types/checkout";
+import { CheckoutState, OrderItem, Address, BuyNowProductData } from "@/types/checkout";
 
 interface CheckoutContextType extends CheckoutState {
   setOrderItems: (items: OrderItem[]) => void;
-  addOrderItem: (item: OrderItem) => void;
+  addOrderItem: (item: OrderItem, productData?: BuyNowProductData | null) => void;
   setShippingAddress: (address: Address) => void;
   setBillingAddress: (address: Address) => void;
   setNotes: (notes: string) => void;
@@ -30,6 +30,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     billingAddress: null,
     notes: undefined,
     isBuyNow: false,
+    buyNowProductData: null,
   });
 
   // Load from localStorage on mount
@@ -55,11 +56,15 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const setOrderItems = useCallback((items: OrderItem[]) => {
-    setState((prev) => ({ ...prev, orderItems: items }));
+    setState((prev) => ({ ...prev, orderItems: items, buyNowProductData: null }));
   }, []);
 
-  const addOrderItem = useCallback((item: OrderItem) => {
-    setState((prev) => ({ ...prev, orderItems: [item] }));
+  const addOrderItem = useCallback((item: OrderItem, productData?: BuyNowProductData | null) => {
+    setState((prev) => ({
+      ...prev,
+      orderItems: [item],
+      buyNowProductData: productData || null,
+    }));
   }, []);
 
   const setShippingAddress = useCallback((address: Address) => {
@@ -85,6 +90,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       billingAddress: null,
       notes: undefined,
       isBuyNow: false,
+      buyNowProductData: null,
     });
     try {
       localStorage.removeItem(STORAGE_KEY);

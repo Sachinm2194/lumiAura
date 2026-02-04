@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentMethod } from "@/types/checkout";
 import { useCheckoutContext } from "@/contexts/CheckoutContext";
+import OrderSummaryItem from "@/components/core-components/order-summary-item";
 import { CreditCard, Wallet, Smartphone } from "lucide-react";
 
 interface CheckoutPaymentFormProps {
@@ -24,7 +25,7 @@ export default function CheckoutPaymentForm({
   onPaymentComplete,
   isLoading = false,
 }: CheckoutPaymentFormProps) {
-  const { orderItems, shippingAddress, billingAddress, buildOrderPayload } = useCheckoutContext();
+  const { orderItems, shippingAddress, billingAddress, buildOrderPayload, isBuyNow, buyNowProductData } = useCheckoutContext();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit_card");
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
@@ -33,12 +34,19 @@ export default function CheckoutPaymentForm({
   const [upiId, setUpiId] = useState("");
   const [walletType, setWalletType] = useState("");
 
-  // Calculate order totals
+  // Calculate order totals with actual prices
   const calculateTotals = () => {
     const subtotal = orderItems.reduce((sum, item) => {
-      // Note: Price calculation would need product data
-      // For now, we'll use a placeholder
-      return sum + (item.quantity * 100); // Placeholder price
+      // Get variant price from product data
+      if (isBuyNow && buyNowProductData) {
+        const variant = buyNowProductData.variants?.find(
+          (v) => v.id === item.variantId
+        ) || buyNowProductData.variants?.[0];
+        const price = variant ? parseFloat(variant.sellingPrice || "0") : 0;
+        return sum + price * item.quantity;
+      }
+      // Fallback for cart items (would need to fetch product data)
+      return sum + item.quantity * 100; // Placeholder
     }, 0);
     const tax = subtotal * 0.1; // 10% tax
     const total = subtotal + tax;
@@ -263,14 +271,17 @@ export default function CheckoutPaymentForm({
             {/* Order Items */}
             <div className="space-y-3">
               <h4 className="font-semibold text-sm">Items ({orderItems.length})</h4>
-              {orderItems.map((item, index) => (
-                <div key={index} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Item {index + 1} x {item.quantity}
-                  </span>
-                  <span className="font-medium">₹{(item.quantity * 100).toLocaleString("en-IN")}</span>
-                </div>
-              ))}
+              <div className="space-y-0">
+                {orderItems.map((item, index) => (
+                  <OrderSummaryItem
+                    key={index}
+                    orderItem={item}
+                    productData={isBuyNow ? buyNowProductData : null}
+                    index={index}
+                    isBuyNow={isBuyNow}
+                  />
+                ))}
+              </div>
             </div>
 
             <div className="border-t pt-4 space-y-2">

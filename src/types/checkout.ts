@@ -33,6 +33,22 @@ export interface CreateOrderPayload {
 // Payment Method Type
 export type PaymentMethod = "credit_card" | "debit_card" | "upi" | "cod" | "wallet";
 
+// Buy Now Product Data Type (minimal data for display)
+export interface BuyNowProductData {
+  productId: string;
+  name: string;
+  slug: string;
+  shortDescription?: string;
+  images: Array<{ url: string; isPrimary?: boolean }>;
+  variants: Array<{
+    id: number;
+    variantName: string;
+    sellingPrice: string;
+    mrp?: string;
+    quantity: number;
+  }>;
+}
+
 // Checkout State Type
 export interface CheckoutState {
   orderItems: OrderItem[];
@@ -40,5 +56,6 @@ export interface CheckoutState {
   billingAddress: Address | null;
   notes?: string;
   isBuyNow: boolean;
+  buyNowProductData?: BuyNowProductData | null;
 }
 

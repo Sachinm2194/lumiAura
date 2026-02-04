@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import CheckoutStepper from "@/components/core-components/checkout-stepper";
 import CheckoutAddressForm from "@/components/core-components/checkout-address-form";
+import OrderSummaryItem from "@/components/core-components/order-summary-item";
 import { useCheckoutContext } from "@/contexts/CheckoutContext";
 import { Address } from "@/types/checkout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ export default function CheckoutAddressPage() {
     setShippingAddress,
     setBillingAddress,
     isBuyNow,
+    buyNowProductData,
   } = useCheckoutContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<{ validateAndSubmit: () => void }>(null);
@@ -31,10 +33,17 @@ export default function CheckoutAddressPage() {
   }, [orderItems.length, router]);
 
   const handleStepClick = (step: number) => {
-    if (step === 1) {
+    // For Buy Now: step 1 is Address (no previous step)
+    // For Cart: step 1 is Cart
+    if (!isBuyNow && step === 1) {
       router.push("/cart");
     }
   };
+
+  // Determine current step for stepper
+  // Buy Now: Address is step 1, Payment is step 2
+  // Cart: Cart is step 1, Address is step 2, Payment is step 3
+  const stepperCurrentStep = isBuyNow ? 1 : 2;
 
   const handleContinue = async (shipping: Address, billing: Address) => {
     setIsSubmitting(true);
@@ -46,10 +55,19 @@ export default function CheckoutAddressPage() {
     }, 100);
   };
 
-  // Calculate order summary
+  // Calculate order summary with actual prices
   const calculateSummary = () => {
     const subtotal = orderItems.reduce((sum, item) => {
-      return sum + (item.quantity * 100); // Placeholder - would need actual product prices
+      // Get variant price from product data
+      if (isBuyNow && buyNowProductData) {
+        const variant = buyNowProductData.variants?.find(
+          (v) => v.id === item.variantId
+        ) || buyNowProductData.variants?.[0];
+        const price = variant ? parseFloat(variant.sellingPrice || "0") : 0;
+        return sum + price * item.quantity;
+      }
+      // Fallback for cart items (would need to fetch product data)
+      return sum + item.quantity * 100; // Placeholder
     }, 0);
     const tax = subtotal * 0.1;
     const total = subtotal + tax;
@@ -66,7 +84,11 @@ export default function CheckoutAddressPage() {
     <div className="w-full py-4 pb-20 md:pb-6 px-3 md:px-4">
       <div className="max-w-7xl mx-auto">
         {/* Stepper */}
-        <CheckoutStepper currentStep={2} onStepClick={handleStepClick} />
+        <CheckoutStepper 
+          currentStep={stepperCurrentStep} 
+          onStepClick={handleStepClick} 
+          isBuyNow={isBuyNow}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {/* Address Form */}
@@ -100,16 +122,17 @@ export default function CheckoutAddressPage() {
                     <Package className="w-4 h-4" />
                     Items ({orderItems.length})
                   </h4>
-                  {orderItems.map((item, index) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {isBuyNow ? "Item" : `Item ${index + 1}`} x {item.quantity}
-                      </span>
-                      <span className="font-medium">
-                        ₹{(item.quantity * 100).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  ))}
+                  <div className="space-y-0">
+                    {orderItems.map((item, index) => (
+                      <OrderSummaryItem
+                        key={index}
+                        orderItem={item}
+                        productData={isBuyNow ? buyNowProductData : null}
+                        index={index}
+                        isBuyNow={isBuyNow}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 <div className="border-t pt-4 space-y-2">

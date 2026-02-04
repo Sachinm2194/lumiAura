@@ -7,12 +7,14 @@ interface CheckoutStepperProps {
   currentStep: 1 | 2 | 3;
   onStepClick?: (step: number) => void;
   className?: string;
+  isBuyNow?: boolean;
 }
 
 export default function CheckoutStepper({
   currentStep,
   onStepClick,
   className,
+  isBuyNow = false,
 }: CheckoutStepperProps) {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -28,11 +30,19 @@ export default function CheckoutStepper({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const steps = [
-    { number: 1, label: "Cart" },
-    { number: 2, label: "Address" },
-    { number: 3, label: "Payment" },
-  ];
+  // Define steps based on flow
+  const steps = isBuyNow
+    ? [
+        // Buy Now flow: Only Address and Payment (no Cart)
+        { number: 1, label: "Address" },
+        { number: 2, label: "Payment" },
+      ]
+    : [
+        // Cart flow: Cart, Address, Payment
+        { number: 1, label: "Cart" },
+        { number: 2, label: "Address" },
+        { number: 3, label: "Payment" },
+      ];
 
   const getStepState = (stepNumber: number) => {
     if (stepNumber < currentStep) return "completed";

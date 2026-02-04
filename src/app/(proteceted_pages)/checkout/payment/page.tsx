@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 
 export default function CheckoutPaymentPage() {
   const router = useRouter();
-  const { orderItems, shippingAddress, billingAddress, buildOrderPayload, clearCheckout } = useCheckoutContext();
+  const { orderItems, shippingAddress, billingAddress, buildOrderPayload, clearCheckout, isBuyNow } = useCheckoutContext();
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Redirect if no items or addresses
@@ -26,12 +26,25 @@ export default function CheckoutPaymentPage() {
   }, [orderItems.length, shippingAddress, billingAddress, router]);
 
   const handleStepClick = (step: number) => {
-    if (step === 1) {
-      router.push("/cart");
-    } else if (step === 2) {
-      router.push("/checkout/address");
+    // For Buy Now: step 1 is Address, step 2 is Payment
+    // For Cart: step 1 is Cart, step 2 is Address, step 3 is Payment
+    if (isBuyNow) {
+      if (step === 1) {
+        router.push("/checkout/address");
+      }
+    } else {
+      if (step === 1) {
+        router.push("/cart");
+      } else if (step === 2) {
+        router.push("/checkout/address");
+      }
     }
   };
+
+  // Determine current step for stepper
+  // Buy Now: Address is step 1, Payment is step 2
+  // Cart: Cart is step 1, Address is step 2, Payment is step 3
+  const stepperCurrentStep = isBuyNow ? 2 : 3;
 
   const handlePaymentComplete = async () => {
     const orderPayload = buildOrderPayload();
@@ -70,7 +83,11 @@ export default function CheckoutPaymentPage() {
     <div className="w-full py-4 pb-20 md:pb-6 px-3 md:px-4">
       <div className="max-w-7xl mx-auto">
         {/* Stepper */}
-        <CheckoutStepper currentStep={3} onStepClick={handleStepClick} />
+        <CheckoutStepper 
+          currentStep={stepperCurrentStep} 
+          onStepClick={handleStepClick} 
+          isBuyNow={isBuyNow}
+        />
 
         <div className="mt-6">
           <CheckoutPaymentForm

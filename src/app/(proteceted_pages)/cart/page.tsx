@@ -321,7 +321,7 @@ export default function CartPage() {
     <div className="w-full py-4 pb-20 md:pb-2 md:py-6 px-3 md:px-4">
       <div className="max-w-7xl mx-auto">
         {/* Stepper */}
-        <CheckoutStepper currentStep={1} />
+        <CheckoutStepper currentStep={1} isBuyNow={false} />
 
         {/* Search Result Info */}
         {searchQuery && !isLoading && (

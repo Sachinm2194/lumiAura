@@ -66,7 +66,7 @@ export default function RootLayout({
                     pauseOnHover
                     theme="light"
                   />
-                  {children}
+        {children}
                   <BottomNavigationFooter />
                 </CheckoutProvider>
               </WishlistProvider>

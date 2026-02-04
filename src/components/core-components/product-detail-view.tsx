@@ -8,7 +8,7 @@ import { useCartContext } from "@/contexts/CartContext";
 import { useCheckoutContext } from "@/contexts/CheckoutContext";
 import { Product, ProductVariant } from "@/types/product";
 import { useWishlistContext } from "@/contexts/WishlistContext";
-import { OrderItem } from "@/types/checkout";
+import { OrderItem, BuyNowProductData } from "@/types/checkout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -161,20 +161,45 @@ export default function ProductDetailView({
 
   // Handle buy now
   const handleBuyNow = () => {
-    if (!product || !selectedVariant) {
+    // ✅ VALIDATION 1: Product must exist
+    if (!product || !product.productId) {
+      toast.error("Product not found");
+      return;
+    }
+
+    // ✅ VALIDATION 2: Variant must be selected
+    if (!selectedVariant) {
       toast.error("Please select a variant");
       return;
     }
 
+    // ✅ VALIDATION 3: Variant ID must be valid
+    if (!selectedVariant.id) {
+      toast.error("Invalid variant selected");
+      return;
+    }
+
+    // ✅ VALIDATION 4: Stock check
     if (selectedVariant.quantity === 0) {
       toast.error("This variant is out of stock");
       return;
     }
 
-    // Build order item from product and selected variant
-    const variantId = selectedVariant.id;
+    // ✅ VALIDATION 5: Quantity must be valid
+    if (quantity < 1) {
+      toast.error("Quantity must be at least 1");
+      return;
+    }
+
+    if (quantity > selectedVariant.quantity) {
+      toast.error(`Only ${selectedVariant.quantity} item(s) available in stock`);
+      return;
+    }
+
+    // Build order item with EXACT variant and quantity
+    const variantId = Number(selectedVariant.id);
     
-    // Extract variant properties
+    // Extract variant properties for order payload
     const productVariant: Record<string, any> = {};
     if (selectedVariant.variantName) {
       const variantName = selectedVariant.variantName.toLowerCase();
@@ -186,14 +211,33 @@ export default function ProductDetailView({
     }
 
     const orderItem: OrderItem = {
-      productId: product.productId,
-      ...(variantId && { variantId: Number(variantId) }),
-      quantity: quantity,
+      productId: product.productId, // UUID
+      variantId: variantId, // EXACT variant ID
+      quantity: quantity, // EXACT quantity
       ...(Object.keys(productVariant).length > 0 && { productVariant }),
     };
 
-    // Add to checkout context
-    addOrderItem(orderItem);
+    // Store MINIMAL product data for display (survives refresh)
+    const productDataForStorage: BuyNowProductData = {
+      productId: product.productId,
+      name: product.name,
+      slug: product.slug,
+      shortDescription: product.shortDescription || undefined,
+      images: product.images?.map(img => ({
+        url: img.url,
+        isPrimary: img.isPrimary,
+      })) || [],
+      variants: product.variants?.map(v => ({
+        id: v.id,
+        variantName: v.variantName || "",
+        sellingPrice: v.sellingPrice,
+        mrp: v.mrp,
+        quantity: v.quantity || 0,
+      })) || [],
+    };
+
+    // Add to checkout context (stores in localStorage)
+    addOrderItem(orderItem, productDataForStorage);
     setIsBuyNow(true);
 
     // Navigate to address page (skipping cart)
