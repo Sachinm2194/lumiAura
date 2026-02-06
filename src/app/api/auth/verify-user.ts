@@ -15,7 +15,7 @@ export async function getCurrentUser(): Promise<{ id: number; email: string; rol
   try {
     const response = await axiosInstance.get<AuthMeResponse>("auth/verify", {
       withCredentials: true,
-      timeout: 2000, // Reduced from 3s to 2s for faster response
+      timeout: 5000, // Increased to 5s to allow for slower networks
     });
     
     // Check if response has authenticated and user properties
@@ -28,7 +28,7 @@ export async function getCurrentUser(): Promise<{ id: number; email: string; rol
     // If 401, try to refresh token and retry
     if (error.response?.status === 401) {
       try {
-        // Attempt to refresh token (with 3-second timeout)
+        // Attempt to refresh token
         const refreshResult = await refreshToken();
         
         // If refresh returns null, it means refresh failed (401 or other error)
@@ -41,7 +41,7 @@ export async function getCurrentUser(): Promise<{ id: number; email: string; rol
         try {
           const retryResponse = await axiosInstance.get<AuthMeResponse>("auth/verify", {
             withCredentials: true,
-            timeout: 2000, // Reduced from 3s to 2s for faster response
+            timeout: 5000, // Increased to 5s to allow for slower networks
           });
           
           if (retryResponse.data?.authenticated && retryResponse.data?.user) {
@@ -61,6 +61,7 @@ export async function getCurrentUser(): Promise<{ id: number; email: string; rol
     }
     
     // For timeout or network errors, silently return null
+    // Don't log these as they're common during initial load
     if (error.code === "ECONNABORTED" || error.message?.includes("timeout") || !error.response) {
       return null;
     }

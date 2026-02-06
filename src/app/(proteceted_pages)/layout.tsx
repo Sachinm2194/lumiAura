@@ -24,33 +24,19 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     setSearchHandler(undefined);
   }, [pathname]);
 
-  // Redirect immediately when we know user is not authenticated
-  // Redirect if: (loading completed AND not authenticated) OR (short delay passed AND not authenticated)
+  // Redirect only after auth check is complete and user is not authenticated
   useEffect(() => {
     if (hasRedirected.current) return;
 
-    if (!isAuthenticated) {
-      // If loading completed, redirect immediately
-      if (!isLoading) {
-        hasRedirected.current = true;
-        router.replace(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
-        return;
-      }
-
-      // If still loading, wait max 500ms then redirect (quick response for unauthenticated users)
-      const timer = setTimeout(() => {
-        if (!isAuthenticated && !hasRedirected.current) {
-          hasRedirected.current = true;
-          router.replace(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
-        }
-      }, 500);
-
-      return () => clearTimeout(timer);
+    // Wait for loading to complete before making redirect decision
+    if (!isLoading && !isAuthenticated) {
+      hasRedirected.current = true;
+      router.replace(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
     }
   }, [isAuthenticated, isLoading, router, pathname]);
 
-  // Show loading spinner while checking auth (only if user might be authenticated)
-  if (isLoading && (isAuthenticated || !hasRedirected.current)) {
+  // Show loading spinner while checking auth
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>

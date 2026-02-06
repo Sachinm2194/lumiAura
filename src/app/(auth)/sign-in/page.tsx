@@ -9,15 +9,25 @@ import SignInForm from "@/components/core-components/Auth/sign-in-form"
 import GoogleOAuthButton from "@/components/core-components/google-oauth-button"
 
 export default function SignIn() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   // Redirect if already authenticated (handles browser back button and manual URL entry)
+  // Only redirect after auth check is complete
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isLoading && isAuthenticated) {
       router.replace("/") // Use replace to prevent back button from going to sign-in
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, isLoading, router])
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   // Redirect if authenticated
   if (isAuthenticated) {

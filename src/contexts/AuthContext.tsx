@@ -38,14 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         setIsLoading(true)
         
-        // Safety timeout - ensure loading is set to false after max 2.5 seconds
+        // Safety timeout - ensure loading is set to false after max 5 seconds
         // This prevents infinite loading if getCurrentUser hangs
-        // Reduced from 5s to 2.5s for faster UI response
         timeoutId = setTimeout(() => {
           if (isMounted) {
+            console.warn("Auth check timeout - setting loading to false");
             setIsLoading(false);
           }
-        }, 2500);
+        }, 5000);
         
         const userData = await getCurrentUser();
         

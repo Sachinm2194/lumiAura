@@ -51,7 +51,7 @@ export default function OrderSummaryItem({
     variant?.variantName ||
     "";
 
-  // If no product data, show minimal info
+  // If no product data, show minimal info  
   if (!actualProductData) {
     return (
       <div className="flex gap-3 py-3 border-b border-border last:border-0">

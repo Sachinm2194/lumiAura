@@ -11,7 +11,7 @@ export async function refreshToken(): Promise<RefreshResponse | null> {
     // Call backend refresh endpoint - refresh token is sent automatically via cookie
     const response = await axiosInstance.post<RefreshResponse>("auth/refresh", {}, {
       withCredentials: true,
-          timeout: 2000, // 2 second timeout (reduced for faster response) to prevent hanging
+      timeout: 5000, // 5 second timeout to allow for slower networks
     });
     
     return response.data;
