@@ -13,9 +13,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PaymentMethod } from "@/types/checkout";
 import { useCheckoutContext } from "@/contexts/CheckoutContext";
+import { useAuth } from "@/contexts/AuthContext";
 import OrderSummaryItem from "@/components/core-components/order-summary-item";
 import { CreditCard, Wallet, Smartphone, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { dummyPaymentEmail } from "@/app/api/dummypayment";
+import { toast } from "react-toastify";
 
 interface CheckoutPaymentFormProps {
   onPaymentComplete: (orderId: string) => void;
@@ -26,7 +29,8 @@ export default function CheckoutPaymentForm({
   onPaymentComplete,
   isLoading = false,
 }: CheckoutPaymentFormProps) {
-  const { orderItems, shippingAddress, billingAddress, buildOrderPayload, isBuyNow, buyNowProductData, cartProductData } = useCheckoutContext();
+  const { orderItems, shippingAddress, billingAddress, buildOrderPayload, isBuyNow, buyNowProductData, cartProductData, notes } = useCheckoutContext();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
@@ -35,6 +39,7 @@ export default function CheckoutPaymentForm({
   const [upiId, setUpiId] = useState("");
   const [walletType, setWalletType] = useState("");
   const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Calculate order totals with actual prices
   const calculateTotals = () => {
@@ -94,17 +99,82 @@ export default function CheckoutPaymentForm({
     e.preventDefault();
 
     if (!validatePayment()) {
+      toast.error("Please fill in all required payment details");
       return;
     }
 
     const orderPayload = buildOrderPayload();
     if (!orderPayload) {
+      toast.error("Please complete all checkout steps");
       return;
     }
 
-    // Call the parent's payment handler
-    // The actual API call will be handled by the parent page
-    onPaymentComplete(""); // Will be set by parent
+    if (!user?.email) {
+      toast.error("User email not found. Please login again.");
+      return;
+    }
+
+    if (!shippingAddress || !billingAddress) {
+      toast.error("Shipping and billing addresses are required");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Prepare order details for payment
+      const orderDetails = {
+        email: user.email,
+        paymentMethod: paymentMethod,
+        orderItems: orderItems.map(item => ({
+          productId: item.productId,
+          variantId: String(item.variantId || ""),
+          quantity: item.quantity,
+        })),
+        shippingAddress: {
+          fullName: shippingAddress.fullName,
+          addressLine1: shippingAddress.addressLine1,
+          addressLine2: shippingAddress.addressLine2,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          postalCode: shippingAddress.postalCode,
+          country: shippingAddress.country,
+          phone: shippingAddress.phone,
+        },
+        billingAddress: {
+          fullName: billingAddress.fullName,
+          addressLine1: billingAddress.addressLine1,
+          addressLine2: billingAddress.addressLine2,
+          city: billingAddress.city,
+          state: billingAddress.state,
+          postalCode: billingAddress.postalCode,
+          country: billingAddress.country,
+          phone: billingAddress.phone,
+        },
+        totals: {
+          subtotal,
+          tax,
+          total,
+        },
+        notes: notes,
+        isBuyNow,
+        buyNowProductData,
+        cartProductData,
+      };
+
+      // Process dummy payment (sends email via backend)
+      const result = await dummyPaymentEmail(orderDetails);
+      
+      toast.success(`Payment processed! Order ${result.orderNumber} confirmed.`);
+      
+      // Call the parent's payment handler with order number
+      onPaymentComplete(result.orderNumber);
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error(error?.message || "Failed to process payment. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Payment methods configuration
