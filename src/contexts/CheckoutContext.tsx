@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { CheckoutState, OrderItem, Address, BuyNowProductData } from "@/types/checkout";
 
 interface CheckoutContextType extends CheckoutState {
-  setOrderItems: (items: OrderItem[]) => void;
+  setOrderItems: (items: OrderItem[], productDataMap?: Record<string, BuyNowProductData>) => void;
   addOrderItem: (item: OrderItem, productData?: BuyNowProductData | null) => void;
   setShippingAddress: (address: Address | null) => void;
   setBillingAddress: (address: Address | null) => void;
@@ -31,6 +31,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     notes: undefined,
     isBuyNow: false,
     buyNowProductData: null,
+    cartProductData: {},
   });
 
   // Load from localStorage on mount
@@ -55,8 +56,13 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     }
   }, [state]);
 
-  const setOrderItems = useCallback((items: OrderItem[]) => {
-    setState((prev) => ({ ...prev, orderItems: items, buyNowProductData: null }));
+  const setOrderItems = useCallback((items: OrderItem[], productDataMap?: Record<string, BuyNowProductData>) => {
+    setState((prev) => ({ 
+      ...prev, 
+      orderItems: items, 
+      buyNowProductData: null,
+      cartProductData: productDataMap || {}
+    }));
   }, []);
 
   const addOrderItem = useCallback((item: OrderItem, productData?: BuyNowProductData | null) => {
@@ -91,6 +97,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       notes: undefined,
       isBuyNow: false,
       buyNowProductData: null,
+      cartProductData: {},
     });
     try {
       localStorage.removeItem(STORAGE_KEY);

@@ -57,5 +57,6 @@ export interface CheckoutState {
   notes?: string;
   isBuyNow: boolean;
   buyNowProductData?: BuyNowProductData | null;
+  cartProductData?: Record<string, BuyNowProductData>; // Map of productId -> product data for cart items
 }
 

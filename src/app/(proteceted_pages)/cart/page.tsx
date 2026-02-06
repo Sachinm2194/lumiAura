@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ShoppingBag, Trash, Trash2 } from "lucide-react";
-import { OrderItem } from "@/types/checkout";
+import { OrderItem, BuyNowProductData } from "@/types/checkout";
 
 export default function CartPage() {
   const router = useRouter();
@@ -265,8 +265,11 @@ export default function CartPage() {
       selectedItems.has(item.id),
     );
 
-    // Map cart items to order items
-    const orderItems: OrderItem[] = selectedCartItems.map((item) => {
+    // Map cart items to order items and extract product data
+    const orderItems: OrderItem[] = [];
+    const productDataMap: Record<string, BuyNowProductData> = {};
+
+    selectedCartItems.forEach((item) => {
       const variantId = item.variant?.variantId || item.variant?.id;
       const variant = item.variant || item.product?.variants?.[0];
       
@@ -282,16 +285,35 @@ export default function CartPage() {
         }
       }
 
-      return {
+      // Create order item
+      orderItems.push({
         productId: item.product.productId,
         ...(variantId && { variantId: Number(variantId) }),
         quantity: item.quantity,
         ...(Object.keys(productVariant).length > 0 && { productVariant }),
-      };
+      });
+
+      // Extract and store product data for display
+      if (item.product) {
+        productDataMap[item.product.productId] = {
+          productId: item.product.productId,
+          name: item.product.name || item.product.productName || "Product",
+          slug: item.product.slug || "",
+          shortDescription: item.product.shortDescription || item.product.description,
+          images: item.product.images || [],
+          variants: item.product.variants?.map((v: any) => ({
+            id: v.variantId || v.id,
+            variantName: v.variantName || "",
+            sellingPrice: v.sellingPrice || "0",
+            mrp: v.mrp,
+            quantity: v.quantity || 0,
+          })) || [],
+        };
+      }
     });
 
-    // Set order items in checkout context
-    setOrderItems(orderItems);
+    // Set order items and product data in checkout context
+    setOrderItems(orderItems, productDataMap);
     setIsBuyNow(false);
     
     // Navigate to address page

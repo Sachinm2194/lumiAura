@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { OrderItem } from "@/types/checkout";
 import { BuyNowProductData } from "@/types/checkout";
 
 interface OrderSummaryItemProps {
   orderItem: OrderItem;
   productData?: BuyNowProductData | null;
+  cartProductData?: Record<string, BuyNowProductData>;
   index?: number;
   isBuyNow?: boolean;
 }
@@ -15,24 +17,28 @@ interface OrderSummaryItemProps {
 export default function OrderSummaryItem({
   orderItem,
   productData,
+  cartProductData,
   index = 0,
   isBuyNow = false,
 }: OrderSummaryItemProps) {
-  // Get variant details from product data
-  const variant = productData?.variants?.find(
-    (v) => v.id === orderItem.variantId
-  ) || productData?.variants?.[0];
+  // Get product data - use productData for Buy Now, or lookup from cartProductData for cart flow
+  const actualProductData = isBuyNow 
+    ? productData 
+    : (cartProductData?.[orderItem.productId] || productData);
 
-  // Get product image
-  const getProductImage = () => {
-    if (!productData) return "/Images/placeholder-product.jpg";
-    const primaryImage =
-      productData.images?.find((img) => img.isPrimary) || productData.images?.[0];
-    if (primaryImage?.url) {
-      return primaryImage.url;
-    }
-    return "/Images/placeholder-product.jpg";
+  // Get variant details from product data
+  const variant = actualProductData?.variants?.find(
+    (v) => Number(v.id) === Number(orderItem.variantId)
+  ) || actualProductData?.variants?.[0];
+
+  // Get product image URL using slug pattern: /Images/{slug}.PNG
+  const getProductImageUrl = () => {
+    if (!actualProductData?.slug) return null;
+    return `/Images/${actualProductData.slug}.PNG`;
   };
+
+  const productImageUrl = getProductImageUrl();
+  const [imageError, setImageError] = useState(false);
 
   // Calculate price
   const price = variant ? parseFloat(variant.sellingPrice || "0") : 0;
@@ -46,7 +52,7 @@ export default function OrderSummaryItem({
     "";
 
   // If no product data, show minimal info
-  if (!productData) {
+  if (!actualProductData) {
     return (
       <div className="flex gap-3 py-3 border-b border-border last:border-0">
         <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden bg-muted flex items-center justify-center">
@@ -73,29 +79,31 @@ export default function OrderSummaryItem({
     <div className="flex gap-3 py-3 border-b border-border last:border-0">
       {/* Product Image */}
       <Link
-        href={`/${productData.slug}`}
-        className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden bg-muted"
+        href={`/${actualProductData.slug}`}
+        className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden bg-muted flex items-center justify-center"
       >
-        <Image
-          src={getProductImage()}
-          alt={productData.name}
-          width={80}
-          height={80}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = "/Images/placeholder-product.jpg";
-          }}
-        />
+        {productImageUrl && !imageError ? (
+          <Image
+            src={productImageUrl}
+            alt={actualProductData.name}
+            width={80}
+            height={80}
+            className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <span className="text-xs text-muted-foreground">No Image</span>
+        )}
       </Link>
 
       {/* Product Details */}
       <div className="flex-1 min-w-0">
         <Link
-          href={`/${productData.slug}`}
+          href={`/${actualProductData.slug}`}
           className="block hover:text-primary transition-colors"
         >
           <h4 className="font-semibold text-sm md:text-base text-foreground line-clamp-2 mb-1">
-            {productData.name}
+            {actualProductData.name}
           </h4>
         </Link>
 

@@ -25,7 +25,7 @@ export default function CheckoutPaymentForm({
   onPaymentComplete,
   isLoading = false,
 }: CheckoutPaymentFormProps) {
-  const { orderItems, shippingAddress, billingAddress, buildOrderPayload, isBuyNow, buyNowProductData } = useCheckoutContext();
+  const { orderItems, shippingAddress, billingAddress, buildOrderPayload, isBuyNow, buyNowProductData, cartProductData } = useCheckoutContext();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit_card");
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
@@ -40,13 +40,23 @@ export default function CheckoutPaymentForm({
       // Get variant price from product data
       if (isBuyNow && buyNowProductData) {
         const variant = buyNowProductData.variants?.find(
-          (v) => v.id === item.variantId
+          (v) => Number(v.id) === Number(item.variantId)
         ) || buyNowProductData.variants?.[0];
         const price = variant ? parseFloat(variant.sellingPrice || "0") : 0;
         return sum + price * item.quantity;
       }
-      // Fallback for cart items (would need to fetch product data)
-      return sum + item.quantity * 100; // Placeholder
+      // For cart items, use cartProductData
+      if (!isBuyNow && cartProductData) {
+        const productData = cartProductData[item.productId];
+        if (productData) {
+          const variant = productData.variants?.find(
+            (v) => Number(v.id) === Number(item.variantId)
+          ) || productData.variants?.[0];
+          const price = variant ? parseFloat(variant.sellingPrice || "0") : 0;
+          return sum + price * item.quantity;
+        }
+      }
+      return sum; // Fallback: no price available
     }, 0);
     const tax = subtotal * 0.1; // 10% tax
     const total = subtotal + tax;
@@ -277,6 +287,7 @@ export default function CheckoutPaymentForm({
                     key={index}
                     orderItem={item}
                     productData={isBuyNow ? buyNowProductData : null}
+                    cartProductData={!isBuyNow ? cartProductData : undefined}
                     index={index}
                     isBuyNow={isBuyNow}
                   />

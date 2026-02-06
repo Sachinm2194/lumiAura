@@ -26,6 +26,7 @@ export default function CheckoutAddressPage() {
     setBillingAddress,
     isBuyNow,
     buyNowProductData,
+    cartProductData,
   } = useCheckoutContext();
   const [addresses, setAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
@@ -188,7 +189,7 @@ export default function CheckoutAddressPage() {
   // Cart: Cart is step 1, Address is step 2, Payment is step 3
   const stepperCurrentStep = isBuyNow ? 1 : 2;
 
-  const handleContinue = async () => {
+  const handleContinueWithOrderSummary = async () => {
     if (!selectedAddressId || !shippingAddress) {
       toast.error("Please select a delivery address");
       return;
@@ -207,15 +208,25 @@ export default function CheckoutAddressPage() {
       // Get variant price from product data
       if (isBuyNow && buyNowProductData) {
         const variant = buyNowProductData.variants?.find(
-          (v) => v.id === item.variantId
+          (v) => Number(v.id) === Number(item.variantId)
         ) || buyNowProductData.variants?.[0];
         const price = variant ? parseFloat(variant.sellingPrice || "0") : 0;
         return sum + price * item.quantity;
       }
-      // Fallback for cart items (would need to fetch product data)
-      return sum + item.quantity * 100; // Placeholder
+      // For cart items, use cartProductData
+      if (!isBuyNow && cartProductData) {
+        const productData = cartProductData[item.productId];
+        if (productData) {
+          const variant = productData.variants?.find(
+            (v) => Number(v.id) === Number(item.variantId)
+          ) || productData.variants?.[0];
+          const price = variant ? parseFloat(variant.sellingPrice || "0") : 0;
+          return sum + price * item.quantity;
+        }
+      }
+      return sum; // Fallback: no price available
     }, 0);
-    const tax = subtotal * 0.1;
+    const tax = subtotal * 0.1; // 10% tax
     const total = subtotal + tax;
     return { subtotal, tax, total };
   };
@@ -316,6 +327,7 @@ export default function CheckoutAddressPage() {
                         key={index}
                         orderItem={item}
                         productData={isBuyNow ? buyNowProductData : null}
+                        cartProductData={!isBuyNow ? cartProductData : undefined}
                         index={index}
                         isBuyNow={isBuyNow}
                       />
@@ -344,7 +356,7 @@ export default function CheckoutAddressPage() {
                     type="button"
                     size="lg"
                     className="w-full"
-                    onClick={handleContinue}
+                    onClick={handleContinueWithOrderSummary}
                     disabled={isSubmitting || !selectedAddressId}
                   >
                     {isSubmitting ? "Processing..." : "Continue"}
