@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Protected routes that require authentication
-const protectedRoutes = ["/cart", "/settings"   ]; // Add more protected routes here
+const protectedRoutes = ["/cart", "/settings", "/profile", "/orders", "/checkout", "/payment"   ]; // Add more protected routes here
 // Or match all routes under (proteceted_pages) folder
-const protectedRoutePattern = /^\/(cart|dashboard|profile|settings)/; // Add your protected routes
+const protectedRoutePattern = /^\/(cart|dashboard|profile|settings|orders|checkout|payment)/; // Add your protected routes
 
 // Auth routes (login, signup) - redirect to home if already authenticated
 const authRoutes = ["/sign-in", "/sign-up", "/verify-email",];
