@@ -10,6 +10,7 @@ import { signIn } from "@/app/api/auth/signin"
 import { handleApiError } from "@/lib/helpers/handleApiError"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
+import { toast } from "react-toastify"
 
 // Validation functions
 const validateEmail = (email: string): string => {
@@ -126,8 +127,8 @@ export default function SignInForm() {
     try {
       const response = await signIn({ email: email.trim(), password })
 
-      // Extract user data from response
-      if (response) {
+   console.log("response", response);
+      if (response) { 
         const userData = {
           id: response.id,
           email: response.email,
@@ -150,10 +151,28 @@ export default function SignInForm() {
       if (formRef.current) {
         formRef.current.reset()
       }
-    } catch (error) {
-      handleApiError(error)
+    } catch (error: any) {
+      console.log("error", error);
+      
+      // Extract error message and show toast
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      // Show toast with error message
+      toast.error(errorMessage);
+      
+      // Reset loading state immediately
+      setIsLoading(false);
     } finally {
-      setIsLoading(false)
+      // Ensure loading state is reset (backup)
+      setIsLoading(false);
     }
   }
 

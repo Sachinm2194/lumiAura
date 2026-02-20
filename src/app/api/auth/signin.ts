@@ -1,5 +1,4 @@
 import axiosInstance from "@/lib/helpers/axiosInstance";
-import { handleApiError } from "@/lib/helpers/handleApiError";
 
 interface SignInPayload {
   email: string;
@@ -14,17 +13,11 @@ interface SignInResponse {
 }
 
 export async function signIn(payload: SignInPayload): Promise<SignInResponse | undefined> {
-  try {
-    const response = await axiosInstance.post<SignInResponse>("auth/login", payload, {
-      headers: { skipAuth: true },
-      withCredentials: true,
-    });
-   
-    return response.data;
-  } catch (error: any) {
+console.log("payload", payload);
+  const response = await axiosInstance.post<SignInResponse>("auth/login", payload, {
+    headers: { skipAuth: true },
+    withCredentials: true,
+  });
+  return response.data;
 
-    console.log(error);
-    // handleApiError(error);
-    throw error; // Re-throw to let form handle it
-  }
 }

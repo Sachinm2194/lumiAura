@@ -30,7 +30,6 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 axiosInstance.interceptors.request.use((config) => {
   // Log the full URL being requested for debugging
   const fullUrl = `${config.baseURL}${config.url}${config.params ? '?' + new URLSearchParams(config.params).toString() : ''}`;
-  console.log("Axios request URL:", fullUrl);
   
   // Remove skipAuth header if present (cleanup)
   if (config.headers?.skipAuth) {
@@ -56,12 +55,24 @@ axiosInstance.interceptors.response.use(
         const currentPath = window.location.pathname;
         const requestUrl = originalRequest?.url || "";
         
+        // Check if we're on an auth page (sign-in/sign-up)
+        // If so, skip ALL refresh logic - 401s are expected during login attempts
+        const isAuthPage = currentPath.startsWith("/sign-in") || 
+                          currentPath.startsWith("/sign-up") ||
+                          currentPath.startsWith("/verify-email");
+        
         // Auth endpoints that should NOT trigger refresh mechanism
         const isLoginEndpoint = requestUrl.includes("/auth/login");
-        const isSignupEndpoint = requestUrl.includes("/auth/signup") || requestUrl.includes("/auth/register");
+        const isSignupEndpoint = requestUrl.includes("/auth/register") || requestUrl.includes("/auth/signup");
         const isLogoutEndpoint = requestUrl.includes("/auth/logout");
         const isRefreshEndpoint = requestUrl.includes("/auth/refresh");
         const isVerifyEndpoint = requestUrl.includes("/auth/verify");
+        
+        // CRITICAL: If on auth page, reject ALL 401s immediately without refresh
+        // This prevents background auth checks from interfering with login attempts
+        if (isAuthPage) {
+          return Promise.reject(error);
+        }
         
         // For login/signup endpoints, 401 is expected (wrong credentials) - just reject
         if (isLoginEndpoint || isSignupEndpoint) {
