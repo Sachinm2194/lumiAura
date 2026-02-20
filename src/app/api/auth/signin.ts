@@ -22,7 +22,9 @@ export async function signIn(payload: SignInPayload): Promise<SignInResponse | u
    
     return response.data;
   } catch (error: any) {
-    handleApiError(error);
+
+    console.log(error);
+    // handleApiError(error);
     throw error; // Re-throw to let form handle it
   }
 }
